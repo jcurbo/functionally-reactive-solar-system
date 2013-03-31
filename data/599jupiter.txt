@@ -1,0 +1,105 @@
+*******************************************************************************
+ Revised: Dec 17, 2009              Jupiter                                 599
+ 
+ PHYSICAL DATA (updated 2009-Jan-28):
+  Mass (10^24 kg)       =  1898.13+-.19   Density (g/cm^3)       =  1.326
+  Equat. radius (1 bar) = 71492+-4 km     Polar radius (km)      = 66854+-10
+  Volumetric mean radius= 69911+-6 km     Flattening             =  0.06487
+
+  Rotation period       = 9h 55m 29.685s  Rot. rate(10^-4 rad/s) =  1.75865
+  m = w^2a^3/GM         =  0.089195       Hydrostatic flat., fh  =  0.06509
+  Inferred rot. period  =  9.894+-0.02 hr ks = 3*J2/m            =  0.494
+  Mom. of inert. I/MRo^2=  0.254          I/MRo^2 (upper bound)  =  0.267 
+  Rocky core mass (Mc/M)=  0.0261         Y factor (He/H ratio)  =  0.18+-0.04
+
+  GM (km^3/s^2)         = 126,686,511     GM 1-sigma (km^3/s^2)  = +-100
+  Equ. grav, ge (m/s^2) = 24.79           Pol. grav, gp (m/s^2)  = 28.34
+
+  Geometric albedo      =  0.52           Visual magnitude V(1,0)= -9.40
+  Vis. mag. (opposition)= -2.70           Obliquity to orbit     =  3.12 deg
+  Sidereal orbit period = 11.862615 yr    Sidereal orbit period  = 4332.820 d
+  Mean daily motion     = 0.0831294 deg/d Mean orbit velocity    = 13.0697 km/s
+
+  Atmos. temp. (1 bar)  = 165+-5 K        Heat flow/mass (x10^7) = 15 erg/gm*s
+  Planetary Solar Const =  50.5 W/m^2     Dipole tilt/offset     = 9.6deg/0.1Rp 
+  Escape velocity (km/s)=  59.5           Mag.dip.mom(gauss-Rp^3)= 4.2 
+  Aroche(ice)/Rp        =  2.76           Hill's sphere rad. Rp  = 740
+*******************************************************************************
+ 
+ 
+*******************************************************************************
+Ephemeris / WWW_USER Sun Mar 31 11:28:47 2013 Pasadena, USA      / Horizons    
+*******************************************************************************
+Target body name: Jupiter (599)                   {source: JUP230}
+Center body name: Sun (10)                        {source: DE405}
+Center-site name: BODY CENTER
+*******************************************************************************
+Start time      : A.D. 2013-Mar-31 00:00:00.0000 CT 
+Stop  time      : A.D. 2013-Apr-10 00:00:00.0000 CT 
+Step-size       : 1440 minutes
+*******************************************************************************
+Center geodetic : 0.00000000,0.00000000,0.0000000 {E-lon(deg),Lat(deg),Alt(km)}
+Center cylindric: 0.00000000,0.00000000,0.0000000 {E-lon(deg),Dxy(km),Dz(km)}
+Center radii    : 696000.0 x 696000.0 x 696000.0 k{Equator, meridian, pole}    
+System GM       : 2.9619468438303034E-04 AU^3/d^2
+Output units    : AU-D, deg, Julian day number (Tp)                            
+Output format   : 10
+Reference frame : ICRF/J2000.0                                                 
+Output type     : GEOMETRIC osculating elements
+Coordinate systm: Ecliptic and Mean Equinox of Reference Epoch                 
+*******************************************************************************
+JDCT ,   , EC, QR, IN, OM, W, Tp, N, MA, TA, A, AD, PR
+*******************************************************************************
+$$SOE
+2456382.500000000, A.D. 2013-Mar-31 00:00:00.0000,  4.894507837376390E-02,  4.948499400028509E+00,  1.303750863287029E+00,  1.005149479953383E+02,  2.739948889562774E+02,  2.455638598097032E+06,  8.308246545189714E-02,  6.180520415290615E+01,  6.688866590171112E+01,  5.203168910126587E+00,  5.457838420224665E+00,  4.333044259602910E+03,
+2456383.500000000, A.D. 2013-Apr-01 00:00:00.0000,  4.873533731932096E-02,  4.948773065175295E+00,  1.303456841724131E+00,  1.005194243834513E+02,  2.739070700891773E+02,  2.455637561880214E+06,  8.310305705038298E-02,  6.198973812467051E+01,  6.705862144929353E+01,  5.202309367016297E+00,  5.455845668857299E+00,  4.331970601054331E+03,
+2456384.500000000, A.D. 2013-Apr-02 00:00:00.0000,  4.887279022682856E-02,  4.947969443451520E+00,  1.303885480824079E+00,  1.005129334817449E+02,  2.738048667131565E+02,  2.455636496381864E+06,  8.310528788674695E-02,  6.216305602551586E+01,  6.725390201385902E+01,  5.202216267823451E+00,  5.456463092195382E+00,  4.331854315823991E+03,
+2456385.500000000, A.D. 2013-Apr-03 00:00:00.0000,  4.876403727041297E-02,  4.947689070572966E+00,  1.303908391511523E+00,  1.005125977463943E+02,  2.736507329219447E+02,  2.455634769934309E+06,  8.312660718019881E-02,  6.240564326904855E+01,  6.749495076635705E+01,  5.201326762684088E+00,  5.454964454795212E+00,  4.330743334918087E+03,
+2456386.500000000, A.D. 2013-Apr-04 00:00:00.0000,  4.892108938180283E-02,  4.947964553305887E+00,  1.303910656408354E+00,  1.005125543900476E+02,  2.738399886547237E+02,  2.455636901518829E+06,  8.309908090927683E-02,  6.229094483631256E+01,  6.739230288165049E+01,  5.202475313104915E+00,  5.456986072903943E+00,  4.332177878032477E+03,
+2456387.500000000, A.D. 2013-Apr-05 00:00:00.0000,  4.890133390128890E-02,  4.947094843074340E+00,  1.304236471261389E+00,  1.005077106187638E+02,  2.736032085711669E+02,  2.455634307043866E+06,  8.312358523018024E-02,  6.260809888399424E+01,  6.772047954953456E+01,  5.201452824412750E+00,  5.455810805751161E+00,  4.330900778679267E+03,
+2456388.500000000, A.D. 2013-Apr-06 00:00:00.0000,  4.903984059511888E-02,  4.948457536731253E+00,  1.303839297406761E+00,  1.005135886645358E+02,  2.740557539639546E+02,  2.455639300815465E+06,  8.307110251737679E-02,  6.223680226444167E+01,  6.734860653470770E+01,  5.203643378528116E+00,  5.458829220324980E+00,  4.333636957866249E+03,
+2456389.500000000, A.D. 2013-Apr-07 00:00:00.0000,  4.902044231800047E-02,  4.948283880856711E+00,  1.303885790135185E+00,  1.005129045228147E+02,  2.739968202587371E+02,  2.455638650398907E+06,  8.307801747263154E-02,  6.237909627893249E+01,  6.749476570975798E+01,  5.203354626168926E+00,  5.458425371481140E+00,  4.333276249864714E+03,
+2456390.500000000, A.D. 2013-Apr-08 00:00:00.0000,  4.884484934892096E-02,  4.949013953069013E+00,  1.303445983341670E+00,  1.005193654579131E+02,  2.740498229228442E+02,  2.455639161945372E+06,  8.308264060216443E-02,  6.242314956340702E+01,  6.752183843273632E+01,  5.203161597433756E+00,  5.457309241798498E+00,  4.333035124916593E+03,
+2456391.500000000, A.D. 2013-Apr-09 00:00:00.0000,  4.894171661637885E-02,  4.948152756047315E+00,  1.303865857264407E+00,  1.005132267122769E+02,  2.739038473653715E+02,  2.455637605340327E+06,  8.309163670907951E-02,  6.264234117848997E+01,  6.776046335798439E+01,  5.202786035828486E+00,  5.457419315609656E+00,  4.332565998915537E+03,
+2456392.500000000, A.D. 2013-Apr-10 00:00:00.0000,  4.881784795100695E-02,  4.948231172971058E+00,  1.303746889799478E+00,  1.005149631369745E+02,  2.738294851262767E+02,  2.455636741473274E+06,  8.310589482538989E-02,  6.280798863543798E+01,  6.791959406878387E+01,  5.202190939255750E+00,  5.456150705540443E+00,  4.331822679442655E+03,
+$$EOE
+*******************************************************************************
+Coordinate system description:
+
+  Ecliptic and Mean Equinox of Reference Epoch
+
+    Reference epoch: J2000.0
+    xy-plane: plane of the Earth's orbit at the reference epoch
+    x-axis  : out along ascending node of instantaneous plane of the Earth's
+              orbit and the Earth's mean equator at the reference epoch
+    z-axis  : perpendicular to the xy-plane in the directional (+ or -) sense
+              of Earth's north pole at the reference epoch.
+
+Symbol meaning [1 AU=149597870.691 km, 1 day=86400.0 s]:
+
+    JDCT     Epoch Julian Date, Coordinate Time
+      EC     Eccentricity, e                                                   
+      QR     Periapsis distance, q (AU)                                        
+      IN     Inclination w.r.t xy-plane, i (degrees)                           
+      OM     Longitude of Ascending Node, OMEGA, (degrees)                     
+      W      Argument of Perifocus, w (degrees)                                
+      Tp     Time of periapsis (Julian day number)                             
+      N      Mean motion, n (degrees/day)                                      
+      MA     Mean anomaly, M (degrees)                                         
+      TA     True anomaly, nu (degrees)                                        
+      A      Semi-major axis, a (AU)                                           
+      AD     Apoapsis distance (AU)                                            
+      PR     Sidereal orbit period (day)                                       
+
+Geometric states/elements have no aberration corrections applied.
+
+ Computations by ...
+     Solar System Dynamics Group, Horizons On-Line Ephemeris System
+     4800 Oak Grove Drive, Jet Propulsion Laboratory
+     Pasadena, CA  91109   USA
+     Information: http://ssd.jpl.nasa.gov/
+     Connect    : telnet://ssd.jpl.nasa.gov:6775  (via browser)
+                  telnet ssd.jpl.nasa.gov 6775    (via command-line)
+     Author     : Jon.Giorgini@jpl.nasa.gov
+*******************************************************************************
+
