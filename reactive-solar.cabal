@@ -13,6 +13,7 @@ maintainer:          james@curbo.org
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
+data-files:	     data/*.txt, data/data.json
 
 executable reactive-solar
   hs-source-dirs:       src
@@ -21,3 +22,10 @@ executable reactive-solar
   build-depends:        base, gtk >= 0.12.4, 
                         gtkglext, OpenGL, reactive-banana
   build-tools:          alex, happy
+--  other-modules:	Paths_reactive-solar
+
+executable convert
+  hs-source-dirs:	src
+  main-is: 		Convert.hs
+  build-depends:	split, regex-pcre, aeson, aeson-pretty
+--  other-modules: 	Paths_reactive-solar
