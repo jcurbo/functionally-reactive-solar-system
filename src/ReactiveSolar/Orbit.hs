@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module ReactiveSolar.Orbit where
 
@@ -22,6 +23,7 @@ data OrbitElements = OrbitElements { name :: String,
                                    } deriving (Show, Generic)
 
 data OrbitHelioCoords = OrbitHelioCoords Double Double Double deriving (Show, Eq)
+
 
 -- orbital formulae checked against http://aa.quae.nl/en/reken/hemelpositie.html
 
@@ -57,9 +59,3 @@ sin_d deg = sin $ toRad deg
 
 cos_d :: Double -> Double
 cos_d deg = cos $ toRad deg
-
-
-
-
-
-
