@@ -40,7 +40,12 @@ are:
 
 ### Prerequisites for Haskell
 
-*cabal* should handle all the Haskell prerequisites. Run *cabal
+This program uses one Haskell library that is not in Hackage,
+*[reactive-banana-gtk](https://github.com/conklech/reactive-banana-gtk)*.
+Download it using git and install it by running *cabal-install* from
+its top level directory.
+
+*cabal* should handle the rest of the Haskell prerequisites. Run *cabal
  configure && cabal build* to build the program in place.  
 
 ### Running
@@ -53,6 +58,7 @@ ghci and type *main* to run the program for the time being.
 ## Meta
 
 Author: James Curbo <james@curbo.org>
+
 Written for the author's Capstone Research Project, part of the degree
 plan for earning a Masters of Science in Computer Science at [Capitol
 College](http://www.capitol-college.edu) in Laurel, MD.
