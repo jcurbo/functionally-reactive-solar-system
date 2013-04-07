@@ -20,7 +20,8 @@ executable reactive-solar
   main-is:              reactive-solar.hs
   -- other-modules:       
   build-depends:        base, gtk >= 0.12.4, 
-                        gtkglext, OpenGL, reactive-banana, ghc-prim
+                        gtkglext, OpenGL, reactive-banana, ghc-prim,
+                        reactive-banana-gtk
   build-tools:          alex, happy
 --  other-modules:	Paths_reactive-solar
 
