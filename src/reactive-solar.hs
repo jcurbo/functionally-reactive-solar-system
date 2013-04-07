@@ -12,8 +12,6 @@ import Reactive.Banana.Frameworks
 
 import Reactive.Banana.Gtk
 
--- import Control.Applicative
-
 main :: IO ()
 main = do
         initGUI
