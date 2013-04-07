@@ -21,28 +21,41 @@ data OrbitElements = OrbitElements { name :: String,
                                      period :: Double
                                    } deriving (Show, Generic)
 
-data OrbitHelioCoords = OrbitHelioCoords Double Double Double
+data OrbitHelioCoords = OrbitHelioCoords Double Double Double deriving (Show, Eq)
 
+-- a = semimajor axis (AU)
+-- e = eccentricity (degrees)
+-- v = true anomaly (angle between perhelion and current position) (degrees)
 calcRadialDist :: Double -> Double -> Double -> Double
-calcRadialDist a e v = (a * (1 - e**2)) / (1+(e * cos v)) 
+calcRadialDist a e v = (a * (1 - e**2)) / (1+(e * cos_d v)) 
 
--- calcHelioCoords :: IO OrbitElements -> Double -> OrbitHelioCoords
--- calcHelioCoords o v = let
---   r = calcRadialDist' o v 
---   omega = longAscNode o
---   w = argPeri o
---   i = incl o
---   x = r * (cos omega * cos(w + v)) - (sin omega * sin(w + v) * cos i)
---   y = r * (sin omega * cos(w + v)) - (cos omega * sin(w + v) * cos i)
---   z = r * sin(w + v) * sin i
---   in OrbitHelioCoords x y z
 
--- orbTest :: IO ()
--- orbTest = do
---   o <- getOrbitDataFromFile "../data/199mercury.txt"
--- putStrLn show $ map $ calcHelioCoords o [0,10..359]
+-- a = semimajor axis (AU)
+-- e = eccentricity (degrees)
+-- o = longitude of ascending node (degrees)
+-- w = argument of perhelion (degrees)
+-- i = inclination (degrees)
+-- v = true anomaly (angle between perhelion and current position) (degrees)
+calcHelioCoords :: Double -> Double -> Double -> Double -> Double -> Double -> OrbitHelioCoords
+calcHelioCoords a e o w i v = let
+  r = calcRadialDist a e v
+  x = r * (cos_d o * cos_d(w + v) - (sin_d o * sin_d(w + v) * cos_d i))
+  y = r * (sin_d o * cos_d(w + v) + (cos_d o * sin_d(w + v) * cos_d i))
+  z = r * sin_d(w + v) * sin_d i
+  in OrbitHelioCoords x y z 
   
-  
+-- trig helper functions
+toDeg :: Double -> Double
+toDeg rad = rad * 180 / pi
+
+toRad :: Double -> Double
+toRad deg = deg * pi / 180
+
+sin_d :: Double -> Double
+sin_d deg = sin $ toRad deg
+
+cos_d :: Double -> Double
+cos_d deg = cos $ toRad deg
 
 
 
