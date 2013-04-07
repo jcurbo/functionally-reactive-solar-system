@@ -44,6 +44,7 @@ registerDestroyEvent window handler = do
     connectionID <- Gtk.onDestroy window (handler $ ())
     let d = Gtk.signalDisconnect connectionID
     return d
+-- onDestroy :: WidgetClass w => w -> IO () -> IO (ConnectId w)
 
 registerClickEvent :: Gtk.ButtonClass b => b  -> (() -> IO ()) -> IO (IO ())
 registerClickEvent button handler = do

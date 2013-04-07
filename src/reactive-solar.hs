@@ -1,6 +1,7 @@
+{-# LANGUAGE ScopedTypeVariables #-} -- allows "forall t. NetworkDescription t"
 module Main (main) where
 
-import qualified Graphics.UI.Gtk as Gtk
+import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
 import Graphics.Rendering.OpenGL as GL
 -- This lets us use := for Gtk attributes
@@ -9,11 +10,13 @@ import Graphics.UI.Gtk (AttrOp((:=)))
 import Reactive.Banana
 import Reactive.Banana.Frameworks
 
+import Reactive.Banana.Gtk
+
 -- import Control.Applicative
 
 main :: IO ()
 main = do
-        Gtk.initGUI
+        initGUI
 
         GtkGL.initGL
 
@@ -22,9 +25,9 @@ main = do
                                       GtkGL.GLModeDouble]
 
         canvas <- GtkGL.glDrawingAreaNew glconfig
-        Gtk.widgetSetSizeRequest canvas 800 600
+        widgetSetSizeRequest canvas 800 600
 
-        Gtk.onRealize canvas $ GtkGL.withGLDrawingArea canvas $ \_ -> do
+        onRealize canvas $ GtkGL.withGLDrawingArea canvas $ \_ -> do
             clearColor $= Color4 0.0 0.0 0.0 0.0
             matrixMode $= Projection
             loadIdentity
@@ -33,7 +36,7 @@ main = do
             drawBuffer $= BackBuffers
 
         -- Set the repaint handler
-        Gtk.onExpose canvas $ \_ -> do
+        onExpose canvas $ \_ -> do
             GtkGL.withGLDrawingArea canvas $ \glwindow -> do
             GL.clear [GL.DepthBuffer, GL.ColorBuffer]
             display
@@ -41,40 +44,49 @@ main = do
             return True
         
         -- Setup the animation
-        Gtk.timeoutAddFull (do
-            Gtk.widgetQueueDraw canvas
+        timeoutAddFull (do
+            widgetQueueDraw canvas
             return True)
-            Gtk.priorityDefaultIdle animationWaitTime
+            priorityDefaultIdle animationWaitTime
 
 
-        window <- Gtk.windowNew
-        Gtk.onDestroy window Gtk.mainQuit
-        Gtk.set window [ Gtk.containerBorderWidth := 8,
-                         Gtk.windowTitle := "Functionally Reactive Solar System" ]
+        window <- windowNew
+        set window [containerBorderWidth := 8,
+                         windowTitle := "Functionally Reactive Solar System" ]
 
         -- more GUI stuff goes here
         
-        vbox <- Gtk.vBoxNew False 4
-        Gtk.set window [ Gtk.containerChild := vbox ]
+        vbox <- vBoxNew False 4
+        set window [containerChild := vbox ]
  
-        label <- Gtk.labelNew (Just "Gtk2Hs using OpenGL via HOpenGL!")
-        closeButton <- Gtk.buttonNewWithLabel "Close"
-        Gtk.onClicked closeButton Gtk.mainQuit
-        Gtk.set vbox [ Gtk.containerChild := canvas,
-                       Gtk.containerChild := label,
-                       Gtk.containerChild := closeButton ]
+        label <- labelNew (Just "Gtk2Hs using OpenGL via HOpenGL!")
+        toggleButton <- toggleButtonNewWithLabel "Test Toggle"
+        toggleButtonSetMode toggleButton False
+        changeButton <- buttonNewWithLabel "Change"
+        closeButton <- buttonNewWithLabel "Close"
+        set vbox [ containerChild := canvas,
+                       containerChild := label,
+                       containerChild := changeButton,
+                       containerChild := closeButton,
+                       containerChild := toggleButton
+                 ]
 
-
+        -- event network (events and handlers)
         network <- compile $ do
-          edestroy <- fromAddHandler $ registerDestroyEvent window
-          eclickclose <- fromAddHandler $ registerClickEvent closeButton
+          eChange <- event0 changeButton buttonActivated
+          eClose <- event0 closeButton buttonActivated
+          eToggle <- event0 toggleButton toggled
 
-          reactimate $ Gtk.widgetDestroy window <$ eclickclose
-          reactimate $ Gtk.mainQuit <$ edestroy
+          reactimate $ widgetDestroy window <$ eClose
+          reactimate $ set label [labelText := "WOW"] <$ eChange
+          reactimate $ toggleButtonSetMode toggleButton True <$ eToggle
+
 
         actuate network
-        Gtk.widgetShowAll window
-        Gtk.mainGUI
+
+        onDestroy window mainQuit
+        widgetShowAll window
+        mainGUI
 
 -- OpenGL stuff goes here
 
@@ -93,14 +105,21 @@ animationWaitTime = 3
 
 -- Gtk stuff
 
-registerDestroyEvent :: Gtk.WidgetClass w => w -> (() -> IO ()) -> IO (IO ())
-registerDestroyEvent window handler = do
-    connectionID <- Gtk.onDestroy window (handler $ ())
-    let d = Gtk.signalDisconnect connectionID
-    return d
-    
-registerClickEvent :: Gtk.ButtonClass b => b  -> (() -> IO ()) -> IO (IO ())
-registerClickEvent button handler = do
-    connectionID <- Gtk.onClicked button (handler $ ())
-    let d = Gtk.signalDisconnect connectionID
-    return d
+-- registerDestroyEvent :: Gtk.WidgetClass w => w -> (() -> IO ()) -> IO (IO ())
+-- registerDestroyEvent window handler = do
+--     connectionID <- Gtk.onDestroy window (handler $ ())
+--     let d = Gtk.signalDisconnect connectionID
+--     return d
+
+-- registerClickEvent :: Gtk.ButtonClass b => b  -> (() -> IO ()) -> IO (IO ())
+-- registerClickEvent button handler = do
+--     connectionID <- Gtk.onClicked button (handler $ ())
+--     let d = Gtk.signalDisconnect connectionID
+--     return d
+
+-- eventM :: (Frameworks t, GObjectClass self) => self -> Signal self (EventM a Bool) -> EventM a b -> Moment t (Event t b)
+-- eventM self signal m = fromAddHandler $ \e -> do
+--   cid <- on self signal $ m >> return False
+--   return $ signalDisconnect cid
+
+  

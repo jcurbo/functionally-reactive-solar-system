@@ -20,12 +20,13 @@ executable reactive-solar
   main-is:              reactive-solar.hs
   -- other-modules:       
   build-depends:        base, gtk >= 0.12.4, 
-                        gtkglext, OpenGL, reactive-banana
+                        gtkglext, OpenGL, reactive-banana, ghc-prim
   build-tools:          alex, happy
 --  other-modules:	Paths_reactive-solar
 
 executable convert
   hs-source-dirs:	src
   main-is: 		Convert.hs
-  build-depends:	split, regex-pcre, aeson, aeson-pretty
+  build-depends:	base, split, regex-pcre, aeson, aeson-pretty, ghc-prim, bytestring,
+                        directory, filepath
 --  other-modules: 	Paths_reactive-solar
