@@ -3,9 +3,13 @@ module Main (main) where
 import qualified Graphics.UI.Gtk as Gtk
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
 import Graphics.Rendering.OpenGL as GL
-
 -- This lets us use := for Gtk attributes
 import Graphics.UI.Gtk (AttrOp((:=)))
+
+import Reactive.Banana
+import Reactive.Banana.Frameworks
+
+-- import Control.Applicative
 
 main :: IO ()
 main = do
@@ -54,12 +58,21 @@ main = do
         Gtk.set window [ Gtk.containerChild := vbox ]
  
         label <- Gtk.labelNew (Just "Gtk2Hs using OpenGL via HOpenGL!")
-        button <- Gtk.buttonNewWithLabel "Close"
-        Gtk.onClicked button Gtk.mainQuit
+        closeButton <- Gtk.buttonNewWithLabel "Close"
+        Gtk.onClicked closeButton Gtk.mainQuit
         Gtk.set vbox [ Gtk.containerChild := canvas,
                        Gtk.containerChild := label,
-                       Gtk.containerChild := button ] 
+                       Gtk.containerChild := closeButton ]
 
+
+        network <- compile $ do
+          edestroy <- fromAddHandler $ registerDestroyEvent window
+          eclickclose <- fromAddHandler $ registerClickEvent closeButton
+
+          reactimate $ Gtk.widgetDestroy window <$ eclickclose
+          reactimate $ Gtk.mainQuit <$ edestroy
+
+        actuate network
         Gtk.widgetShowAll window
         Gtk.mainGUI
 
@@ -77,3 +90,17 @@ display = do
         vertex (Vertex3 0.25 0.75 0.0 :: Vertex3 GLfloat)
     
 animationWaitTime = 3
+
+-- Gtk stuff
+
+registerDestroyEvent :: Gtk.WidgetClass w => w -> (() -> IO ()) -> IO (IO ())
+registerDestroyEvent window handler = do
+    connectionID <- Gtk.onDestroy window (handler $ ())
+    let d = Gtk.signalDisconnect connectionID
+    return d
+    
+registerClickEvent :: Gtk.ButtonClass b => b  -> (() -> IO ()) -> IO (IO ())
+registerClickEvent button handler = do
+    connectionID <- Gtk.onClicked button (handler $ ())
+    let d = Gtk.signalDisconnect connectionID
+    return d
