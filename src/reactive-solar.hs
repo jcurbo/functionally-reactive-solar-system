@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-} -- allows "forall t. NetworkDescription t"
 module Main (main) where
 
 import Graphics.UI.Gtk
@@ -12,93 +11,56 @@ import Reactive.Banana.Frameworks
 
 import Reactive.Banana.Gtk
 
+import ReactiveSolar.GUI
+import ReactiveSolar.Orbit
+import ReactiveSolar.Data
+
 main :: IO ()
 main = do
         initGUI
-
         GtkGL.initGL
-
-        glconfig <- GtkGL.glConfigNew [GtkGL.GLModeRGBA,
-                                      GtkGL.GLModeDepth,
-                                      GtkGL.GLModeDouble]
-
-        canvas <- GtkGL.glDrawingAreaNew glconfig
-        widgetSetSizeRequest canvas 800 600
-
-        onRealize canvas $ GtkGL.withGLDrawingArea canvas $ \_ -> do
-            clearColor $= Color4 0.0 0.0 0.0 0.0
-            matrixMode $= Projection
-            loadIdentity
-            ortho 0.0 1.0 0.0 1.0 (-1.0) 1.0
-            depthFunc $= Just Less
-            drawBuffer $= BackBuffers
-
-        -- Set the repaint handler
-        onExpose canvas $ \_ -> do
-            GtkGL.withGLDrawingArea canvas $ \glwindow -> do
-            GL.clear [GL.DepthBuffer, GL.ColorBuffer]
-            display
-            GtkGL.glDrawableSwapBuffers glwindow
-            return True
-        
-        -- Setup the animation
-        timeoutAddFull (do
-            widgetQueueDraw canvas
-            return True)
-            priorityDefaultIdle animationWaitTime
-
 
         window <- windowNew
         set window [containerBorderWidth := 8,
                          windowTitle := "Functionally Reactive Solar System" ]
 
-        -- more GUI stuff goes here
-        
-        vbox <- vBoxNew False 4
-        set window [containerChild := vbox ]
- 
-        label <- labelNew (Just "Gtk2Hs using OpenGL via HOpenGL!")
-        toggleButton <- toggleButtonNewWithLabel "Test Toggle"
-        toggleButtonSetMode toggleButton False
-        changeButton <- buttonNewWithLabel "Change"
-        closeButton <- buttonNewWithLabel "Close"
-        set vbox [ containerChild := canvas,
-                       containerChild := label,
-                       containerChild := changeButton,
-                       containerChild := closeButton,
-                       containerChild := toggleButton
-                 ]
+        vboxTop <- vBoxNew False 4
+        set window [containerChild := vboxTop]
 
+        menu <- createMenu
+        (Just menuBar) <- uiManagerGetWidget menu "/ui/menubar"
+        boxPackStart vboxTop menuBar PackNatural 0
+
+        canvas <- createCanvas
+        boxPackStart vboxTop canvas PackGrow 0
+
+        statusBar <- statusbarNew
+        boxPackStart vboxTop statusBar PackNatural 0
+   
         -- event network (events and handlers)
         network <- compile $ do
-          eChange <- event0 changeButton buttonActivated
-          eClose <- event0 closeButton buttonActivated
-          eToggle <- event0 toggleButton toggled
+          eCanvasRealize <- event0 canvas realize
 
-          reactimate $ widgetDestroy window <$ eClose
-          reactimate $ set label [labelText := "WOW"] <$ eChange
-          reactimate $ toggleButtonSetMode toggleButton True <$ eToggle
+        --   eChange <- event0 changeButton buttonActivated
+        --   eClose <- event0 closeButton buttonActivated
+        --   eToggle <- event0 toggleButton toggled
 
+        --   reactimate $ widgetDestroy window <$ eClose
+        --   reactimate $ set label [labelText := "WOW"] <$ eChange
+        --   reactimate $ toggleButtonSetMode toggleButton True <$ eToggle
+          reactimate $ canvasOnRealize canvas <$ eCanvasRealize
 
         actuate network
 
+        -- handled here because RB.Gtk doesn't have a way to tie in
+        -- GTK events (vs signals) yet (that I can figure out)
+
         onDestroy window mainQuit
+       
         widgetShowAll window
         mainGUI
 
--- OpenGL stuff goes here
 
-display :: IO ()
-display = do
-        loadIdentity 
-        color (Color3 1 1 1 :: Color3 GLfloat)
-        -- Instead of glBegin ... glEnd there is renderPrimitive.  
-        renderPrimitive Polygon $ do
-        vertex (Vertex3 0.25 0.25 0.0 :: Vertex3 GLfloat)
-        vertex (Vertex3 0.75 0.25 0.0 :: Vertex3 GLfloat)
-        vertex (Vertex3 0.75 0.75 0.0 :: Vertex3 GLfloat)
-        vertex (Vertex3 0.25 0.75 0.0 :: Vertex3 GLfloat)
-    
-animationWaitTime = 3
+
 
 
