@@ -23,12 +23,13 @@ data OrbitElements = OrbitElements { name :: String,
 
 data OrbitHelioCoords = OrbitHelioCoords Double Double Double deriving (Show, Eq)
 
+-- orbital formulae checked against http://aa.quae.nl/en/reken/hemelpositie.html
+
 -- a = semimajor axis (AU)
 -- e = eccentricity (degrees)
 -- v = true anomaly (angle between perhelion and current position) (degrees)
 calcRadialDist :: Double -> Double -> Double -> Double
 calcRadialDist a e v = (a * (1 - e**2)) / (1+(e * cos_d v)) 
-
 
 -- a = semimajor axis (AU)
 -- e = eccentricity (degrees)
