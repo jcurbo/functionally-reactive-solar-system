@@ -103,23 +103,4 @@ display = do
     
 animationWaitTime = 3
 
--- Gtk stuff
 
--- registerDestroyEvent :: Gtk.WidgetClass w => w -> (() -> IO ()) -> IO (IO ())
--- registerDestroyEvent window handler = do
---     connectionID <- Gtk.onDestroy window (handler $ ())
---     let d = Gtk.signalDisconnect connectionID
---     return d
-
--- registerClickEvent :: Gtk.ButtonClass b => b  -> (() -> IO ()) -> IO (IO ())
--- registerClickEvent button handler = do
---     connectionID <- Gtk.onClicked button (handler $ ())
---     let d = Gtk.signalDisconnect connectionID
---     return d
-
--- eventM :: (Frameworks t, GObjectClass self) => self -> Signal self (EventM a Bool) -> EventM a b -> Moment t (Event t b)
--- eventM self signal m = fromAddHandler $ \e -> do
---   cid <- on self signal $ m >> return False
---   return $ signalDisconnect cid
-
-  
