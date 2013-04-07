@@ -48,7 +48,7 @@ are:
 Currently, this program uses data files, and cabal's data-files
 support has not been integrated in yet, so *cabal install* will not do
 the right thing and should not be used.  Load *reactive-solar.hs* into
-ghci and type *main* to run the program for the time being.)
+ghci and type *main* to run the program for the time being.
 
 ## Meta
 
