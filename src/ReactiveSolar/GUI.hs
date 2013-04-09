@@ -4,7 +4,8 @@ import Graphics.UI.Gtk
 import Graphics.UI.Gtk (AttrOp((:=)))
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
 
-import Graphics.Rendering.OpenGL as GL
+import Graphics.Rendering.OpenGL
+
 
 
 -- menu code, modified from Gtk2hs/gtk/demo/ActionMenu.hs
@@ -99,7 +100,7 @@ createCanvas = do
   -- Set the repaint handler
   onExpose canvas $ \_ -> 
     GtkGL.withGLDrawingArea canvas $ \glwindow -> do
-      GL.clear [GL.DepthBuffer, GL.ColorBuffer]
+      clear [DepthBuffer, ColorBuffer]
       display
       GtkGL.glDrawableSwapBuffers glwindow
       return True
@@ -116,31 +117,61 @@ createCanvas = do
 canvasOnRealize :: GtkGL.GLDrawingArea -> IO ()
 canvasOnRealize canvas = 
   GtkGL.withGLDrawingArea canvas $ \_ -> do
-    clearColor $= Color4 0.0 0.0 0.0 0.0
+    shadeModel $= Smooth
+    clearColor $= Color4 0.0 0.0 0.0 1.0
+    clearDepth $= 1.0
+    depthFunc $= Just Lequal
+    color (Color3 1.0 1.0 1.0 :: Color3 GLfloat)
     matrixMode $= Projection
     loadIdentity
-    ortho 0.0 1.0 0.0 1.0 (-1.0) 1.0
-    depthFunc $= Just Less
     drawBuffer $= BackBuffers
+    hint PerspectiveCorrection $= Nicest
+    -- lighting
+    let l = Light 0
+    light l $= Enabled
+    lighting $= Enabled
+    position l $= vertex4f 0.0 0.0 0.0 1.0
+    colorMaterial $= Just (Front, Diffuse)
+    lineSmooth $= Enabled
+    hint LineSmooth $= Nicest
+    hint PolygonSmooth $= Nicest
+    
+    
 
 canvasOnExpose :: GtkGL.GLDrawingArea -> IO Bool
 canvasOnExpose canvas =
     GtkGL.withGLDrawingArea canvas $ \glwindow -> do
-      GL.clear [GL.DepthBuffer, GL.ColorBuffer]
       display
       GtkGL.glDrawableSwapBuffers glwindow
       return True
 
 display :: IO ()
 display = do
-        loadIdentity 
-        color (Color3 1 1 1 :: Color3 GLfloat)
-        -- Instead of glBegin ... glEnd there is renderPrimitive.  
-        renderPrimitive Polygon $ do
-        vertex (Vertex3 0.25 0.25 0.0 :: Vertex3 GLfloat)
-        vertex (Vertex3 0.75 0.25 0.0 :: Vertex3 GLfloat)
-        vertex (Vertex3 0.75 0.75 0.0 :: Vertex3 GLfloat)
-        vertex (Vertex3 0.25 0.75 0.0 :: Vertex3 GLfloat)
+  clear [DepthBuffer, ColorBuffer]
+  loadIdentity
+
+  lookAt (vertex3d 0.0 0.0 1000.0) (vertex3d 0.0 0.0 0.0) (vector3d 0.0 1.0 0.0)
+  rotate 0 (vector3f 1.0 0.0 0.0)
+  rotate 0 (vector3f 0.0 1.0 0.0)
+
+  drawSun
+  
+        -- loadIdentity 
+        -- color (Color3 1 1 1 :: Color3 GLfloat)
+        -- -- Instead of glBegin ... glEnd there is renderPrimitive.  
+        -- renderPrimitive Polygon $ do
+        -- vertex (Vertex3 0.25 0.25 0.0 :: Vertex3 GLfloat)
+        -- vertex (Vertex3 0.75 0.25 0.0 :: Vertex3 GLfloat)
+        -- vertex (Vertex3 0.75 0.75 0.0 :: Vertex3 GLfloat)
+        -- vertex (Vertex3 0.25 0.75 0.0 :: Vertex3 GLfloat)
+
+drawSun :: IO ()
+drawSun = do
+  color (Color3 1.0 1.0 0.0 :: Color3 GLfloat)
+  materialEmission Front $= (Color4 1.0 1.0 0.0 1.0 :: Color4 GLfloat)
+  renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere 5.0 100 100)
+  return ()
+
 
 buttonStartAct :: IO ()
 buttonStartAct = do
@@ -164,5 +195,24 @@ buttonQuitAct window = do
   -- cleanup code goes here (saving changes)
   widgetDestroy window
   return ()
-  
+
+-- OpenGL helpers
+vertex3f :: GLfloat -> GLfloat -> GLfloat -> Vertex3 GLfloat
+vertex3f = Vertex3
+
+vertex3d :: GLdouble -> GLdouble -> GLdouble -> Vertex3 GLdouble
+vertex3d = Vertex3
+
+vertex4f :: GLfloat -> GLfloat -> GLfloat -> GLfloat -> Vertex4 GLfloat
+vertex4f = Vertex4
+
+vertex4d :: GLdouble -> GLdouble -> GLdouble -> GLdouble -> Vertex4 GLdouble
+vertex4d = Vertex4
+
+vector3f :: GLfloat -> GLfloat -> GLfloat -> Vector3 GLfloat
+vector3f = Vector3
+
+vector3d :: GLdouble -> GLdouble -> GLdouble -> Vector3 GLdouble
+vector3d = Vector3
+
 
