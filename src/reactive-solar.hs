@@ -2,7 +2,7 @@ module Main (main) where
 
 import Graphics.UI.Gtk
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
--- import Graphics.Rendering.OpenGL as GL
+import Graphics.Rendering.OpenGL
 
 -- This lets us use := for Gtk attributes
 import Graphics.UI.Gtk (AttrOp((:=)))
@@ -15,24 +15,30 @@ import ReactiveSolar.GUI
 import ReactiveSolar.Orbit
 import ReactiveSolar.Data
 
+import Data.IORef
+
+
+
 main :: IO ()
 main = do
         initGUI
         GtkGL.initGL
 
+        let cam = CameraState 30.0 0 0.5
+
+        camState <- newIORef cam
+
         window <- windowNew
         set window [containerBorderWidth := 8,
                          windowTitle := "Functionally Reactive Solar System" ]
 
-        vboxTop <- vBoxNew False 0
-        set window [containerChild := vboxTop]
+        vBoxTop <- vBoxNew False 0
+        set window [containerChild := vBoxTop]
 
-        -- menu <- createMenu
-        -- (Just menuBar) <- uiManagerGetWidget menu "/ui/menubar"
-        -- boxPackStart vboxTop menuBar PackNatural 0
+        -- First row, buttons
 
         hBoxTop <- hBoxNew False 0
-        boxPackStart vboxTop hBoxTop PackNatural 0
+        boxPackStart vBoxTop hBoxTop PackNatural 0
 
         buttonStart <- buttonNewWithLabel "Start"
         boxPackStart hBoxTop buttonStart PackNatural 0
@@ -52,13 +58,40 @@ main = do
         buttonQuit <- buttonNewWithLabel "Quit"
         boxPackEnd hBoxTop buttonQuit PackNatural 0
 
-        canvas <- createCanvas
-        boxPackStart vboxTop canvas PackGrow 0
+        -- Second row, tweak controls
+
+        hBoxTweak <- hBoxNew False 0
+        boxPackStart vBoxTop hBoxTweak PackNatural 0
+
+        labelCamX <- labelNewWithMnemonic "Tilt"
+        adjCamX <- adjustmentNew (tilt cam) (-90.0) 90.0 1 5.0 0
+        spinCamX <- spinButtonNew adjCamX 1 0
+        boxPackStart hBoxTweak labelCamX PackNatural 2
+        boxPackStart hBoxTweak spinCamX PackNatural 2
+
+        labelCamY <- labelNewWithMnemonic "Rotate"
+        adjCamY <- adjustmentNew (rot cam) (-180.0) 180.0 1 5.0 0
+        spinCamY <- spinButtonNew adjCamY 1 0
+        spinButtonSetWrap spinCamY True
+        boxPackStart hBoxTweak labelCamY PackNatural 2
+        boxPackStart hBoxTweak spinCamY PackNatural 2
+
+        labelCamZ <- labelNewWithMnemonic "Zoom"
+        adjCamZ <- adjustmentNew (zoom cam) (-10.0) (-0.05) 0.05 1.0 0
+        spinCamZ <- spinButtonNew adjCamZ 0.05 2
+        boxPackStart hBoxTweak labelCamZ PackNatural 2
+        boxPackStart hBoxTweak spinCamZ PackNatural 2
+
+        buttonReset <- buttonNewWithLabel "Reset"
+        boxPackStart hBoxTweak buttonReset PackNatural 2
+
+        canvas <- createCanvas camState
+        boxPackStart vBoxTop canvas PackGrow 0
 
         -- add label here later for time?
 
         statusBar <- statusbarNew
-        boxPackStart vboxTop statusBar PackNatural 0
+        boxPackStart vBoxTop statusBar PackNatural 0
    
         -- event network (events and handlers)
         network <- compile $ do
@@ -69,7 +102,10 @@ main = do
           eAdd   <- event0 buttonAdd buttonActivated
           eRem   <- event0 buttonRem buttonActivated
           eQuit  <- event0 buttonQuit buttonActivated
-          
+          eReset <- event0 buttonReset buttonActivated
+
+        
+       
         --   eChange <- event0 changeButton buttonActivated
         --   eClose <- event0 closeButton buttonActivated
         --   eToggle <- event0 toggleButton toggled
@@ -84,11 +120,19 @@ main = do
           reactimate $ buttonAddAct <$ eAdd
           reactimate $ buttonRemAct <$ eRem
           reactimate $ buttonQuitAct window <$ eQuit
+          reactimate $ buttonResetAct camState spinCamX spinCamY spinCamZ <$ eReset
 
         actuate network
 
         -- handled here because RB.Gtk doesn't have a way to tie in
         -- GTK events (vs signals) yet (that I can figure out)
+
+        onValueSpinned spinCamX $
+          updateCam camState spinCamX spinCamY spinCamZ
+        onValueSpinned spinCamY $
+          updateCam camState spinCamX spinCamY spinCamZ
+        onValueSpinned spinCamZ $
+          updateCam camState spinCamX spinCamY spinCamZ
 
         onDestroy window mainQuit
        
