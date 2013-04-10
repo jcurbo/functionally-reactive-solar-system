@@ -1,4 +1,16 @@
-module ReactiveSolar.GUI where
+module ReactiveSolar.GUI
+       (CameraState(..),
+        createCanvas,
+        canvasOnRealize,
+        updateCam,
+        buttonStartAct,
+        buttonStopAct,
+        buttonRemAct,
+        buttonQuitAct,
+        buttonListAct,
+        buttonAddAct,
+        buttonResetAct
+        ) where
 
 import Graphics.UI.Gtk
 import Graphics.UI.Gtk (AttrOp((:=)))
@@ -6,102 +18,27 @@ import qualified Graphics.UI.Gtk.OpenGL as GtkGL
 
 import Graphics.Rendering.OpenGL
 
+import Control.Monad
+import Data.IORef
 
+data CameraState = CameraState { tilt :: Double,
+                                 rot :: Double,
+                                 zoom :: Double }
 
--- menu code, modified from Gtk2hs/gtk/demo/ActionMenu.hs
-
--- uiDef =
---   "<ui>\
--- \ <menubar>\
--- \ <menu name=\"File\" action=\"FileAction\">\
--- \ <menuitem name=\"New\" action=\"NewAction\" />\
--- \ <menuitem name=\"Open\" action=\"OpenAction\" />\
--- \ <menuitem name=\"Save\" action=\"SaveAction\" />\
--- \ <menuitem name=\"SaveAs\" action=\"SaveAsAction\" />\
--- \ <separator/>\
--- \ <menuitem name=\"Exit\" action=\"ExitAction\"/>\
--- \ <placeholder name=\"FileMenuAdditions\" />\
--- \ </menu>\
--- \ <menu name=\"Edit\" action=\"EditAction\">\
--- \ <menuitem name=\"Cut\" action=\"CutAction\"/>\
--- \ <menuitem name=\"Copy\" action=\"CopyAction\"/>\
--- \ <menuitem name=\"Paste\" action=\"PasteAction\"/>\
--- \ </menu>\
--- \ </menubar>\
--- \ <toolbar>\
--- \ <placeholder name=\"FileToolItems\">\
--- \ <separator/>\
--- \ <toolitem name=\"New\" action=\"NewAction\"/>\
--- \ <toolitem name=\"Open\" action=\"OpenAction\"/>\
--- \ <toolitem name=\"Save\" action=\"SaveAction\"/>\
--- \ <separator/>\
--- \ </placeholder>\
--- \ <placeholder name=\"EditToolItems\">\
--- \ <separator/>\
--- \ <toolitem name=\"Cut\" action=\"CutAction\"/>\
--- \ <toolitem name=\"Copy\" action=\"CopyAction\"/>\
--- \ <toolitem name=\"Paste\" action=\"PasteAction\"/>\
--- \ <separator/>\
--- \ </placeholder>\
--- \ </toolbar>\
--- \</ui>"
-
--- createMenu :: IO UIManager
--- createMenu = do
---   fileAct <- actionNew "FileAction" "File" Nothing Nothing
---   editAct <- actionNew "EditAction" "Edit" Nothing Nothing
-
---   -- Create menu items
---   newAct <- actionNew "NewAction" "New"
---             (Just "Clear the spreadsheet area.")
---             (Just stockNew)
---   openAct <- actionNew "OpenAction" "Open"
---              (Just "Open an existing spreadsheet.")
---              (Just stockOpen)
---   saveAct <- actionNew "SaveAction" "Save"
---              (Just "Save the current spreadsheet.")
---              (Just stockSave)
---   saveAsAct <- actionNew "SaveAsAction" "SaveAs"
---                (Just "Save spreadsheet under new name.")
---                (Just stockSaveAs)
---   exitAct <- actionNew "ExitAction" "Exit"
---              (Just "Exit this application.")
---              (Just stockSaveAs)
---   cutAct <- actionNew "CutAction" "Cut"
---             (Just "Cut out the current selection.")
---             (Just stockCut)
---   copyAct <- actionNew "CopyAction" "Copy"
---              (Just "Copy the current selection.")
---              (Just stockCopy)
---   pasteAct <- actionNew "PasteAction" "Paste"
---               (Just "Paste the current selection.")
---               (Just stockPaste)
-  
---   standardGroup <- actionGroupNew "standard"
---   mapM_ (actionGroupAddAction standardGroup) [fileAct, editAct]
---   mapM_ (\act -> actionGroupAddActionWithAccel standardGroup act Nothing)
---     [newAct, openAct, saveAct, saveAsAct, exitAct, cutAct, copyAct, pasteAct]
-  
---   ui <- uiManagerNew
---   mid <- uiManagerAddUiFromString ui uiDef
---   uiManagerInsertActionGroup ui standardGroup 0
-
---   return ui
-
-createCanvas :: IO GtkGL.GLDrawingArea
-createCanvas = do
+createCanvas :: IORef CameraState -> IO GtkGL.GLDrawingArea
+createCanvas camState = do
   glconfig <- GtkGL.glConfigNew [GtkGL.GLModeRGBA,
                                  GtkGL.GLModeDepth,
                                  GtkGL.GLModeDouble]
 
   canvas <- GtkGL.glDrawingAreaNew glconfig
-  widgetSetSizeRequest canvas 800 600
+  widgetSetSizeRequest canvas 1024 768
 
   -- Set the repaint handler
   onExpose canvas $ \_ -> 
     GtkGL.withGLDrawingArea canvas $ \glwindow -> do
       clear [DepthBuffer, ColorBuffer]
-      display
+      display camState
       GtkGL.glDrawableSwapBuffers glwindow
       return True
 
@@ -117,61 +54,85 @@ createCanvas = do
 canvasOnRealize :: GtkGL.GLDrawingArea -> IO ()
 canvasOnRealize canvas = 
   GtkGL.withGLDrawingArea canvas $ \_ -> do
-    shadeModel $= Smooth
-    clearColor $= Color4 0.0 0.0 0.0 1.0
-    clearDepth $= 1.0
-    depthFunc $= Just Lequal
-    color (Color3 1.0 1.0 1.0 :: Color3 GLfloat)
     matrixMode $= Projection
     loadIdentity
-    drawBuffer $= BackBuffers
-    hint PerspectiveCorrection $= Nicest
-    -- lighting
-    let l = Light 0
-    light l $= Enabled
-    lighting $= Enabled
-    position l $= vertex4f 0.0 0.0 0.0 1.0
-    colorMaterial $= Just (Front, Diffuse)
+    perspective 75 (800 / 600) 0.001 500
+    matrixMode $= Modelview 0
+    loadIdentity
+    clearColor $= (Color4 0 0 0 0)
+    -- shadeModel $= Smooth
+    -- clearDepth $= 1.0
+    -- depthFunc $= Just Lequal
+    -- drawBuffer $= BackBuffers
+    -- hint PerspectiveCorrection $= Nicest
+    -- -- lighting
+    -- let l = Light 0
+    -- light l $= Enabled
+    -- lighting $= Enabled
+    -- position l $= vertex4f 0.0 0.0 0.0 1.0
+    colorMaterial $= Just (FrontAndBack, Diffuse)
     lineSmooth $= Enabled
     hint LineSmooth $= Nicest
     hint PolygonSmooth $= Nicest
-    
-    
 
-canvasOnExpose :: GtkGL.GLDrawingArea -> IO Bool
-canvasOnExpose canvas =
-    GtkGL.withGLDrawingArea canvas $ \glwindow -> do
-      display
-      GtkGL.glDrawableSwapBuffers glwindow
-      return True
 
-display :: IO ()
-display = do
+-- canvasOnExpose :: GtkGL.GLDrawingArea -> IO Bool
+-- canvasOnExpose canvas =
+--   GtkGL.withGLDrawingArea canvas $ \glwindow -> do
+--     clear [DepthBuffer, ColorBuffer]
+--     display
+--     GtkGL.glDrawableSwapBuffers glwindow
+--     return True
+    
+   
+display :: IORef CameraState -> IO ()
+display camState = do
   clear [DepthBuffer, ColorBuffer]
   loadIdentity
-
-  lookAt (vertex3d 0.0 0.0 1000.0) (vertex3d 0.0 0.0 0.0) (vector3d 0.0 1.0 0.0)
-  rotate 0 (vector3f 1.0 0.0 0.0)
-  rotate 0 (vector3f 0.0 1.0 0.0)
-
-  drawSun
+  c <- readIORef camState
+  let cT = realToFrac $ tilt c
+      cR = realToFrac $ rot c
+      cZ = realToFrac $ zoom c
+  -- lookAt (c :: Vertex3 GLdouble) (vertex3d 0.0 0.0 0.0) (vector3d 0.0 1.0 0.0)
+  translate (vector3d 0 0 cZ)
+  preservingMatrix $ do
+    -- the three changes we want to track with IORefs
+    rotate cT (vector3d 1 0 0) -- rotate around x axis (tilt)
+    rotate cR (vector3d 0 1 0) -- rotate around y axis (rotate)
+    -- translate (vector3d 0 0 cZ) -- translate along z axis (zoom)
+    drawSunAxis
+    drawSun
   
-        -- loadIdentity 
-        -- color (Color3 1 1 1 :: Color3 GLfloat)
-        -- -- Instead of glBegin ... glEnd there is renderPrimitive.  
-        -- renderPrimitive Polygon $ do
-        -- vertex (Vertex3 0.25 0.25 0.0 :: Vertex3 GLfloat)
-        -- vertex (Vertex3 0.75 0.25 0.0 :: Vertex3 GLfloat)
-        -- vertex (Vertex3 0.75 0.75 0.0 :: Vertex3 GLfloat)
-        -- vertex (Vertex3 0.25 0.75 0.0 :: Vertex3 GLfloat)
 
+-- generalize later
 drawSun :: IO ()
-drawSun = do
-  color (Color3 1.0 1.0 0.0 :: Color3 GLfloat)
-  materialEmission Front $= (Color4 1.0 1.0 0.0 1.0 :: Color4 GLfloat)
-  renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere 5.0 100 100)
+drawSun = preservingMatrix $ do
+  let sunRadius = 0.0046491
+  color (Color3 1 1 0 :: Color3 GLfloat)
+  materialEmission Front $= (Color4 1 1 0 1 :: Color4 GLfloat)
+  renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere sunRadius 100 100)
   return ()
 
+drawSunAxis :: IO ()
+drawSunAxis = renderPrimitive Lines $ do
+    color (Color3 0 0 1 :: Color3 GLfloat)
+    vertex (vertex3d 0 0.06 0)
+    vertex (vertex3d 0 (-0.06) 0)
+    color (Color3 1 1 1 :: Color3 GLfloat)
+    vertex (vertex3d 0.06 0 0)
+    vertex (vertex3d (-0.06) 0 0)
+    color (Color3 0 1 0 :: Color3 GLfloat)
+    vertex (vertex3d 0 0 0.06)
+    vertex (vertex3d 0 0 (-0.06))
+
+updateCam :: IORef CameraState -> SpinButton -> SpinButton -> SpinButton -> IO ()
+updateCam camState x y z = do
+    valx <- liftM realToFrac $ spinButtonGetValue x
+    valy <- liftM realToFrac $ spinButtonGetValue y
+    valz <- liftM realToFrac $ spinButtonGetValue z
+    let c = CameraState valx valy valz
+    writeIORef camState c
+    return ()
 
 buttonStartAct :: IO ()
 buttonStartAct = do
@@ -194,6 +155,14 @@ buttonQuitAct :: Window -> IO ()
 buttonQuitAct window = do
   -- cleanup code goes here (saving changes)
   widgetDestroy window
+  return ()
+
+buttonResetAct :: IORef CameraState -> SpinButton -> SpinButton -> SpinButton -> IO ()
+buttonResetAct camState x y z = do
+  spinButtonSetValue x 30
+  spinButtonSetValue y 0
+  spinButtonSetValue z (-0.5)
+  updateCam camState x y z
   return ()
 
 -- OpenGL helpers
