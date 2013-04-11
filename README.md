@@ -21,6 +21,7 @@ these are:
 
 * libgtk2.0-dev
 * libgtkglext1-dev
+* libftgl2-dev
 
 Similar packages can be found on other Linux platforms.
 
@@ -40,9 +41,13 @@ are:
 
 ### Prerequisites for Haskell
 
-This program uses one Haskell library that is not in Hackage,
-*[reactive-banana-gtk](https://github.com/conklech/reactive-banana-gtk)*.
-Download it using git and install it by running *cabal-install* from
+This program uses some Haskell libraries that is not in Hackage:
+
+* [reactive-banana-gtk](https://github.com/conklech/reactive-banana-gtk)
+* [a fork of FTGL](https://github.com/Peaker/FTGL)
+    * Requires FTGL library (see Linux Preqs)
+
+Download them (using git) and install by running *cabal-install* from
 its top level directory.
 
 *cabal* should handle the rest of the Haskell prerequisites. Run *cabal
