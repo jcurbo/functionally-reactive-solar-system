@@ -1,4 +1,15 @@
-module ReactiveSolar.Data where
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+module ReactiveSolar.Data
+       (readJsonFile,
+        initSolarSystem,
+        writeJsonFileFromNASAFiles,
+        OrbitElements(..),
+        Orbit(..),
+        OrbitHelioCoords(..),
+        SystemState(..),
+        CameraState(..)
+        ) where
 
 import System.IO
 import Data.List.Split
@@ -11,8 +22,43 @@ import Data.List
 import System.Directory
 import qualified Data.ByteString.Lazy as L
 import Data.Maybe
+import GHC.Generics (Generic)
 
-import ReactiveSolar.Orbit
+-- state information for the entire system
+data SystemState = SystemState { camState :: CameraState,
+                                 orbits   :: [Orbit]
+                               } deriving (Show)
+
+data CameraState = CameraState { tilt :: Double,
+                                 rot :: Double,
+                                 zoom :: Double
+                               } deriving (Show)
+
+data OrbitElements = OrbitElements { name :: String,           -- name of object
+                                     id :: Int,                -- ID from HORIZONS
+                                     epoch :: Double,          -- Julian day of elements
+                                     ecc :: Double,            -- eccentricity of orbit 
+                                     distPeri :: Double,       -- distance from Sun at periapsis (AU)
+                                     incl :: Double,           -- inclination of orbit (deg)
+                                     longAscNode :: Double,    -- longtitude of ascending node (deg)
+                                     argPeri :: Double,        -- argument of periapsis (deg)
+                                     timePeri :: Double,       -- time of periapsis passage (day)
+                                     meanMotion :: Double,     -- motion per day along orbit (deg)
+                                     meanAnomaly :: Double,    -- mean anomaly (deg)
+                                     trueAnomaly :: Double,    -- true anomaly (deg)
+                                     semiMajorAxis :: Double,  -- semi-major axis (AU)
+                                     distApo :: Double,        -- distance at apoapsis (AU)
+                                     period :: Double          -- orbital period (days)
+                                   } deriving (Show, Generic)
+
+-- an Orbit has a set of starting parameters (OrbitElements) as well as
+-- a current position in the orbit (curTrueAnomaly)
+data Orbit = Orbit { elements :: OrbitElements,
+                     curTrueAnomaly :: Double
+                   } deriving (Show)
+
+-- 3d cartesian coordinates
+data OrbitHelioCoords = OrbitHelioCoords Double Double Double deriving (Show, Eq)
 
 dataDir = "../data/"
 dataFile = "data.json"
@@ -82,3 +128,11 @@ readJsonFile = do
       j = fromJust o
   return j
   
+initSolarSystem :: IO [Orbit]
+initSolarSystem = do
+  d <- readJsonFile
+  j <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
+  return j
+  
+
+       
