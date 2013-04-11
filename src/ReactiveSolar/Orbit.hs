@@ -1,34 +1,15 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+module ReactiveSolar.Orbit
+       (calcRadialDist,
+        calcHelioCoords
+        ) where
 
-module ReactiveSolar.Orbit where
-
-import GHC.Generics (Generic)
-
-data OrbitElements = OrbitElements { name :: String,
-                                     id :: Int,
-                                     epoch :: Double,
-                                     ecc :: Double,
-                                     distPeri :: Double,
-                                     incl :: Double,
-                                     longAscNode :: Double,
-                                     argPeri :: Double,
-                                     timePeri :: Double,
-                                     meanMotion :: Double,
-                                     meanAnomaly :: Double,
-                                     trueAnomaly :: Double,
-                                     semiMajorAxis :: Double,
-                                     distApo :: Double,
-                                     period :: Double
-                                   } deriving (Show, Generic)
-
-data OrbitHelioCoords = OrbitHelioCoords Double Double Double deriving (Show, Eq)
+import ReactiveSolar.Data
 
 
 -- orbital formulae checked against http://aa.quae.nl/en/reken/hemelpositie.html
 
 -- a = semimajor axis (AU)
--- e = eccentricity (degrees)
+-- e = eccentricity 
 -- v = true anomaly (angle between perhelion and current position) (degrees)
 calcRadialDist :: Double -> Double -> Double -> Double
 calcRadialDist a e v = (a * (1 - e**2)) / (1+(e * cos_d v)) 
