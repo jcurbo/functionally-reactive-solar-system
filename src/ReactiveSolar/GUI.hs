@@ -1,6 +1,5 @@
 module ReactiveSolar.GUI
-       (CameraState(..),
-        createCanvas,
+       (createCanvas,
         canvasOnRealize,
         updateCam,
         buttonStartAct,
@@ -21,12 +20,11 @@ import Graphics.Rendering.OpenGL
 import Control.Monad
 import Data.IORef
 
-data CameraState = CameraState { tilt :: Double,
-                                 rot :: Double,
-                                 zoom :: Double }
+import ReactiveSolar.Data
+import ReactiveSolar.Orbit
 
-createCanvas :: IORef CameraState -> IO GtkGL.GLDrawingArea
-createCanvas camState = do
+createCanvas :: IORef SystemState -> IO GtkGL.GLDrawingArea
+createCanvas sysState = do
   glconfig <- GtkGL.glConfigNew [GtkGL.GLModeRGBA,
                                  GtkGL.GLModeDepth,
                                  GtkGL.GLModeDouble]
@@ -38,7 +36,7 @@ createCanvas camState = do
   onExpose canvas $ \_ -> 
     GtkGL.withGLDrawingArea canvas $ \glwindow -> do
       clear [DepthBuffer, ColorBuffer]
-      display camState
+      display sysState
       GtkGL.glDrawableSwapBuffers glwindow
       return True
 
@@ -85,14 +83,14 @@ canvasOnRealize canvas =
 --     return True
     
    
-display :: IORef CameraState -> IO ()
-display camState = do
+display :: IORef SystemState -> IO ()
+display sysState = do
   clear [DepthBuffer, ColorBuffer]
   loadIdentity
-  c <- readIORef camState
-  let cT = realToFrac $ tilt c
-      cR = realToFrac $ rot c
-      cZ = realToFrac $ zoom c
+  c <- readIORef sysState
+  let cT = realToFrac $ tilt $ camState c
+      cR = realToFrac $ rot $ camState c
+      cZ = realToFrac $ zoom $ camState c
   -- lookAt (c :: Vertex3 GLdouble) (vertex3d 0.0 0.0 0.0) (vector3d 0.0 1.0 0.0)
   translate (vector3d 0 0 cZ)
   preservingMatrix $ do
@@ -113,6 +111,9 @@ drawSun = preservingMatrix $ do
   renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere sunRadius 100 100)
   return ()
 
+-- drawPlanet :: Planet -> IO ()
+-- drawPlanet = 
+
 drawSunAxis :: IO ()
 drawSunAxis = renderPrimitive Lines $ do
     color (Color3 0 0 1 :: Color3 GLfloat)
@@ -125,13 +126,18 @@ drawSunAxis = renderPrimitive Lines $ do
     vertex (vertex3d 0 0 0.06)
     vertex (vertex3d 0 0 (-0.06))
 
-updateCam :: IORef CameraState -> SpinButton -> SpinButton -> SpinButton -> IO ()
-updateCam camState x y z = do
+-- drawAxis :: Planet -> IO ()
+-- drawAxis
+
+updateCam :: IORef SystemState -> SpinButton -> SpinButton -> SpinButton -> IO ()
+updateCam sysState x y z = do
     valx <- liftM realToFrac $ spinButtonGetValue x
     valy <- liftM realToFrac $ spinButtonGetValue y
     valz <- liftM realToFrac $ spinButtonGetValue z
+    oldState <- readIORef sysState
+    let o = orbits oldState
     let c = CameraState valx valy valz
-    writeIORef camState c
+    writeIORef sysState $ SystemState c o
     return ()
 
 buttonStartAct :: IO ()
@@ -157,12 +163,12 @@ buttonQuitAct window = do
   widgetDestroy window
   return ()
 
-buttonResetAct :: IORef CameraState -> SpinButton -> SpinButton -> SpinButton -> IO ()
-buttonResetAct camState x y z = do
+buttonResetAct :: IORef SystemState -> SpinButton -> SpinButton -> SpinButton -> IO ()
+buttonResetAct sysState x y z = do
   spinButtonSetValue x 30
   spinButtonSetValue y 0
   spinButtonSetValue z (-0.5)
-  updateCam camState x y z
+  updateCam sysState x y z
   return ()
 
 -- OpenGL helpers
