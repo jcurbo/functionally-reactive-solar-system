@@ -63,3 +63,5 @@ Written for the author's Capstone Research Project, part of the degree
 plan for earning a Masters of Science in Computer Science at [Capitol
 College](http://www.capitol-college.edu) in Laurel, MD.
 
+This project is available at both [bitbucket](http://bitbucket.org/jcurbo/capitol_cs714)
+and [github](http://github.com/jcurbo/capitol_cs714).
