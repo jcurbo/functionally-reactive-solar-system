@@ -54,7 +54,7 @@ canvasOnRealize canvas =
   GtkGL.withGLDrawingArea canvas $ \_ -> do
     matrixMode $= Projection
     loadIdentity
-    perspective 75 (800 / 600) 0.001 500
+    perspective 25 (800 / 600) 0.001 500
     matrixMode $= Modelview 0
     loadIdentity
     clearColor $= Color4 0 0 0 0
@@ -71,7 +71,12 @@ canvasOnRealize canvas =
     colorMaterial $= Just (FrontAndBack, Diffuse)
     lineSmooth $= Enabled
     hint LineSmooth $= Nicest
-    hint PolygonSmooth $= Nicest
+    --polygonSmooth $= Enabled
+    --hint PolygonSmooth $= Nicest
+    blend $= Enabled
+    blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
+    lineWidth $= 0.25
+
 
 
 -- canvasOnExpose :: GtkGL.GLDrawingArea -> IO Bool
@@ -85,21 +90,24 @@ canvasOnRealize canvas =
    
 display :: IORef SystemState -> IO ()
 display sysState = do
+  viewport $= (Position 0 0, Size 1024 768)
   clear [DepthBuffer, ColorBuffer]
   loadIdentity
   c <- readIORef sysState
   let cT = realToFrac $ tilt $ camState c
       cR = realToFrac $ rot $ camState c
       cZ = realToFrac $ zoom $ camState c
-  -- lookAt (c :: Vertex3 GLdouble) (vertex3d 0.0 0.0 0.0) (vector3d 0.0 1.0 0.0)
+      objs = orbits c
   translate (vector3d 0 0 cZ)
   preservingMatrix $ do
     -- the three changes we want to track with IORefs
     rotate cT (vector3d 1 0 0) -- rotate around x axis (tilt)
-    rotate cR (vector3d 0 1 0) -- rotate around y axis (rotate)
+    rotate cR (vector3d 0 0 1) -- rotate around y axis (rotate)
     -- translate (vector3d 0 0 cZ) -- translate along z axis (zoom)
     drawSunAxis
     drawSun
+    mapM drawOrbit objs
+    return ()
   
 
 -- generalize later
@@ -117,17 +125,34 @@ drawSun = preservingMatrix $ do
 drawSunAxis :: IO ()
 drawSunAxis = renderPrimitive Lines $ do
     color (Color3 0 0 1 :: Color3 GLfloat)
-    vertex (vertex3d 0 0.06 0)
-    vertex (vertex3d 0 (-0.06) 0)
+    vertex (vertex3d 0 100 0)
+    vertex (vertex3d 0 (-100) 0)
     color (Color3 1 1 1 :: Color3 GLfloat)
-    vertex (vertex3d 0.06 0 0)
-    vertex (vertex3d (-0.06) 0 0)
+    vertex (vertex3d 100 0 0)
+    vertex (vertex3d (-100) 0 0)
     color (Color3 0 1 0 :: Color3 GLfloat)
-    vertex (vertex3d 0 0 0.06)
-    vertex (vertex3d 0 0 (-0.06))
+    vertex (vertex3d 0 0 100)
+    vertex (vertex3d 0 0 (-100))
 
 -- drawAxis :: Planet -> IO ()
 -- drawAxis
+
+drawOrbit :: Orbit -> IO ()
+drawOrbit orbit = renderPrimitive LineStrip $ do
+  color (Color3 1 1 1 :: Color3 GLfloat)
+  let e = elements orbit
+      m = map (calcHelioCoords
+               (semiMajorAxis e)
+               (ecc e)
+               (longAscNode e)
+               (argPeri e)
+               (incl e)) [0..360]
+  mapM (\pt -> vertex (vertex3d (realToFrac $ xCoord pt)
+                                (realToFrac $ yCoord pt)
+                                (realToFrac $ zCoord pt))) m
+  return ()
+    
+  
 
 updateCam :: IORef SystemState -> SpinButton -> SpinButton -> SpinButton -> IO ()
 updateCam sysState x y z = do
@@ -165,9 +190,9 @@ buttonQuitAct window = do
 
 buttonResetAct :: IORef SystemState -> SpinButton -> SpinButton -> SpinButton -> IO ()
 buttonResetAct sysState x y z = do
-  spinButtonSetValue x 30
+  spinButtonSetValue x 0
   spinButtonSetValue y 0
-  spinButtonSetValue z (-0.5)
+  spinButtonSetValue z (-150.0)
   updateCam sysState x y z
   return ()
 
