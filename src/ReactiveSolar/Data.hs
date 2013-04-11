@@ -131,8 +131,7 @@ readJsonFile = do
 initSolarSystem :: IO [Orbit]
 initSolarSystem = do
   d <- readJsonFile
-  j <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
-  return j
+  mapM (\x -> return (Orbit x (trueAnomaly x))) d
   
 
        

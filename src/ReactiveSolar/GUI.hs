@@ -57,7 +57,7 @@ canvasOnRealize canvas =
     perspective 75 (800 / 600) 0.001 500
     matrixMode $= Modelview 0
     loadIdentity
-    clearColor $= (Color4 0 0 0 0)
+    clearColor $= Color4 0 0 0 0
     -- shadeModel $= Smooth
     -- clearDepth $= 1.0
     -- depthFunc $= Just Lequal
@@ -146,16 +146,16 @@ buttonStartAct = do
   return ()
 
 buttonStopAct :: IO ()
-buttonStopAct = do return ()
+buttonStopAct = return ()
 
 buttonListAct :: IO ()
-buttonListAct = do return ()
+buttonListAct = return ()
 
 buttonAddAct :: IO ()
-buttonAddAct = do return ()
+buttonAddAct = return ()
 
 buttonRemAct :: IO ()
-buttonRemAct = do return ()
+buttonRemAct = return ()
 
 buttonQuitAct :: Window -> IO ()
 buttonQuitAct window = do
