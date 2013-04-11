@@ -1,6 +1,8 @@
 module ReactiveSolar.Orbit
        (calcRadialDist,
-        calcHelioCoords
+        calcHelioCoords,
+        sin_d,
+        cos_d
         ) where
 
 import ReactiveSolar.Data
