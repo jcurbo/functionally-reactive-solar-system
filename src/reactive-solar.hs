@@ -24,7 +24,7 @@ main = do
        GtkGL.initGL
 
        -- state init
-       let cam = CameraState 30.0 0 0.5
+       let cam = CameraState 0 0 (-150.0)
        ssData <- initSolarSystem
        let s = SystemState cam ssData
        sysState <- newIORef s
@@ -67,7 +67,7 @@ main = do
        boxPackStart vBoxTop hBoxTweak PackNatural 0
 
        labelCamX <- labelNewWithMnemonic "Tilt"
-       adjCamX <- adjustmentNew (tilt cam) (-90.0) 90.0 1 5.0 0
+       adjCamX <- adjustmentNew (tilt cam) (-90.0) 0 1 5.0 0
        spinCamX <- spinButtonNew adjCamX 1 0
        boxPackStart hBoxTweak labelCamX PackNatural 2
        boxPackStart hBoxTweak spinCamX PackNatural 2
@@ -80,8 +80,8 @@ main = do
        boxPackStart hBoxTweak spinCamY PackNatural 2
 
        labelCamZ <- labelNewWithMnemonic "Zoom"
-       adjCamZ <- adjustmentNew (zoom cam) (-10.0) (-0.05) 0.05 1.0 0
-       spinCamZ <- spinButtonNew adjCamZ 0.05 2
+       adjCamZ <- adjustmentNew (zoom cam) (-200.0) (-0.05) 0.5 5.0 0
+       spinCamZ <- spinButtonNew adjCamZ 0.5 1
        boxPackStart hBoxTweak labelCamZ PackNatural 2
        boxPackStart hBoxTweak spinCamZ PackNatural 2
 
