@@ -58,9 +58,15 @@ data Orbit = Orbit { elements :: OrbitElements,
                    } deriving (Show)
 
 -- 3d cartesian coordinates
-data OrbitHelioCoords = OrbitHelioCoords Double Double Double deriving (Show, Eq)
+data OrbitHelioCoords = OrbitHelioCoords { xCoord :: Double,
+                                           yCoord :: Double,
+                                           zCoord :: Double
+                                         } deriving (Show, Eq)
 
+dataDir :: String
 dataDir = "../data/"
+
+dataFile :: String
 dataFile = "data.json"
 
 -- won't need this if the generic stuff works, but keep it around for now
