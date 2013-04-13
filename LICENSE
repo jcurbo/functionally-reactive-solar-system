@@ -1,4 +1,4 @@
-Copyright (c) 2013 James Curbo <james@curbo.org>
+reactive-solar is copyright (c) 2013 James Curbo <james@curbo.org>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -18,4 +18,16 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+--
+
+A copy of the Inconsolata font is included.  It was obtained from
+http://www.levien.com/type/myfonts/inconsolata.html and is copyright
+Raph Levien.  Inconsolata is licensed under the SIL Open Font License:
+http://scripts.sil.org/cms/scripts/page.php?item_id=OFL_web
+
+A copy of the OFL is in OFL.txt.
+
+
+
 
