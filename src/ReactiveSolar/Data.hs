@@ -14,7 +14,9 @@ module ReactiveSolar.Data
         getRot,
         getZoom,
         updateTrueAnomaly,
-        getScale
+        getScale,
+        updateState,
+        timeloop
         ) where
 
 import System.IO
@@ -30,11 +32,15 @@ import qualified Data.ByteString.Lazy as L
 import Data.Maybe
 import GHC.Generics (Generic)
 import Data.IORef
+import Control.Concurrent
+import Control.Concurrent.STM
+import Text.Printf
 
 -- state information for the entire system
 data SystemState = SystemState { camState :: CameraState,
                                  orbits   :: [Orbit],
-                                 scalefac :: Int
+                                 scalefac :: Int,
+                                 delayTime :: Int
                                } deriving (Show)
 
 data CameraState = CameraState { tilt :: Double,
@@ -134,23 +140,28 @@ readJsonFile = do
 
 -- delay is in milliseconds; e.g. a delay of (24 * 60 * 60 * 1000) would set fac to 1, and would
 -- advance the true anomaly by the value of meanMotion (which is in degrees/day)
-updateTrueAnomaly :: SystemState -> Int -> Int -> SystemState
-updateTrueAnomaly sysState delay = let
+updateTrueAnomaly :: SystemState -> SystemState
+updateTrueAnomaly sysState = let
   -- number of milliseconds in a day divided by the delay tells us how much to scale meanMotion
-  fac = (24 * 60 * 60 * 1000) `div` delay
+  fac = (24 * 60 * 60 * 1000) `div` (delayTime sysState)
   n = map (\x -> Orbit
                  (elements x)
                  (curTrueAnomaly x + (fromIntegral (scalefac sysState) * (meanMotion (elements x) / fromIntegral fac)))
           ) $ orbits sysState
-  in SystemState (camState sysState) n
+  in SystemState (camState sysState) n (scalefac sysState) (delayTime sysState)
 
 initState :: IO (IORef SystemState)
 initState = do
   d <- readJsonFile
   ssData <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
+  -- default values for the state
+      -- camera at 0, 0, -150
   let cam = CameraState 0 0 (-150.0)
+      -- scale at real-time
       scaleV = 1
-      s = SystemState cam ssData scaleV
+      -- update delay at 100 ms
+      delayT = 100
+      s = SystemState cam ssData scaleV delayT
   newIORef s
 
 getTilt :: IORef SystemState -> IO Double
@@ -178,9 +189,39 @@ getScale sysState = do
   return t
 
 -- update the system state every 'delay' milliseconds
-updateState :: IORef SystemState -> Int -> Int -> IO ()
-updateState sysState delay scaleV = do
-  modifyIORef sysState (\x -> updateTrueAnomaly x delay scaleV)
-  return ()
-  
-  
+updateState :: IORef SystemState -> IO ()
+updateState sysState = do
+  modifyIORef sysState updateTrueAnomaly
+--  threadDelay (delay * 1000)
+  r <- readIORef sysState
+  let v = curTrueAnomaly $ last $ orbits r
+  printf "%f\n" v
+--  updateState sysState delay
+
+
+-- updateStateM :: IORef SystemState -> Int -> MVar DoOrDie -> IO ()
+-- updateStateM sysState delay v = run where
+--   run = do
+--     putMVar v Do
+--     modifyIORef sysState (\x -> updateTrueAnomaly x delay)
+--     threadDelay (delay * 1000)
+--     r <- readIORef sysState
+--     let a = curTrueAnomaly $ last $ orbits r
+--     printf "%f\n" a
+
+--     m <- takeMVar v
+--     case m of
+--       Do -> updateStateM sysState delay v
+--       Die -> return ()
+
+data DoOrDie = Do | Die
+
+timeloop :: TMVar DoOrDie -> TMVar DoOrDie -> Int -> IO ()
+timeloop tick die delay = run where
+  run = do
+    i <- forkIO (threadDelay (1000 * delay) >> atomically (putTMVar tick Do))
+    r <- atomically (takeTMVar tick `orElse` takeTMVar die)
+    case r of
+      Do -> run
+      Die -> killThread i
+      
