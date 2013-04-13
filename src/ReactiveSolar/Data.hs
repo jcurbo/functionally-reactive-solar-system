@@ -34,7 +34,6 @@ import qualified Data.ByteString.Lazy as L
 import Data.Maybe
 import GHC.Generics (Generic)
 import Data.IORef
-import Control.Concurrent
 import Text.Printf
 
 import Data.Fixed (mod')
@@ -130,19 +129,6 @@ readJsonFile = do
       j = fromJust o
   return j
   
--- initSolarSystem :: IO [Orbit]
--- initSolarSystem = do
---   d <- readJsonFile
---   mapM (\x -> return (Orbit x (trueAnomaly x))) d
-  
--- updateTrueAnomalyDaily :: SystemState -> SystemState
--- updateTrueAnomalyDaily sysState = let
---   n = map (\x -> Orbit (elements x) ((curTrueAnomaly x) + (meanMotion $ elements x))) $ orbits sysState
---   in SystemState (camState sysState) n
-
-
--- delay is in milliseconds; e.g. a delay of (24 * 60 * 60 * 1000) would set fac to 1, and would
--- advance the true anomaly by the value of meanMotion (which is in degrees/day)
 updateTrueAnomaly :: SystemState -> SystemState
 updateTrueAnomaly sysState = let
   delayf = (fromIntegral $ delayTime sysState) :: Double
@@ -211,13 +197,3 @@ updateScale :: IORef SystemState -> Int -> IO ()
 updateScale sysState val = do
   oldState <- readIORef sysState
   writeIORef sysState $ SystemState (camState oldState) (orbits oldState) val (delayTime oldState)
-
--- timeloop :: MVar Int -> Int -> IO ()
--- timeloop tick delay = run where
---   run = do
---     r <- takeMVar tick
---     if (r == (-1)) then
---       putStrLn "Die" >> return ()
---      else
---       putStrLn "Do" >> threadDelay (1000 * delay) >> putMVar tick (r+1) >> putStrLn (show r) >> run
-      
