@@ -18,6 +18,7 @@ module ReactiveSolar.Data
         updateState,
         -- timeloop,
         getDelay,
+        updateScale
         ) where
 
 import System.IO
@@ -35,6 +36,8 @@ import GHC.Generics (Generic)
 import Data.IORef
 import Control.Concurrent
 import Text.Printf
+
+import Data.Fixed (mod')
 
 -- state information for the entire system
 data SystemState = SystemState { camState :: CameraState,
@@ -142,11 +145,12 @@ readJsonFile = do
 -- advance the true anomaly by the value of meanMotion (which is in degrees/day)
 updateTrueAnomaly :: SystemState -> SystemState
 updateTrueAnomaly sysState = let
-  -- number of milliseconds in a day divided by the delay tells us how much to scale meanMotion
-  fac = (24 * 60 * 60 * 1000) `div` (delayTime sysState)
+  delayf = (fromIntegral $ delayTime sysState) :: Double
+  scalef = (fromIntegral $ scalefac sysState) :: Double
+  fac = (24 * 60 * 60) * (1000 / delayf) * (1 / scalef)
   n = map (\x -> Orbit
                  (elements x)
-                 (curTrueAnomaly x + (fromIntegral (scalefac sysState) * (meanMotion (elements x) / fromIntegral fac)))
+                 ((curTrueAnomaly x + (meanMotion (elements x) / fac)) `mod'` 360)
           ) $ orbits sysState
   in SystemState (camState sysState) n (scalefac sysState) (delayTime sysState)
 
@@ -199,8 +203,14 @@ updateState sysState = do
   modifyIORef sysState updateTrueAnomaly
   r <- readIORef sysState
   let v = curTrueAnomaly $ last $ orbits r
-  printf "%f\n" v
+      s = scalefac r
+  printf "current true anomaly: %f\n" v
+  printf "current scale factor: %d\n" s
 
+updateScale :: IORef SystemState -> Int -> IO ()
+updateScale sysState val = do
+  oldState <- readIORef sysState
+  writeIORef sysState $ SystemState (camState oldState) (orbits oldState) val (delayTime oldState)
 
 -- timeloop :: MVar Int -> Int -> IO ()
 -- timeloop tick delay = run where

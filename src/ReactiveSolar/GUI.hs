@@ -8,7 +8,10 @@ module ReactiveSolar.GUI
         buttonQuitAct,
         buttonListAct,
         buttonAddAct,
-        buttonResetAct
+        buttonResetAct,
+        updateScaleFromSpinner,
+        buttonScaleDayAct,
+        buttonScaleYearAct
         ) where
 
 import Graphics.UI.Gtk as Gtk
@@ -110,6 +113,8 @@ display sysState = do
     drawSunAxis
     drawSun
     mapM_ drawOrbit objs
+    mapM_ drawPlanetRadius objs
+    mapM_ drawPlanet objs
     
     return ()
   
@@ -123,8 +128,27 @@ drawSun = preservingMatrix $ do
   renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere sunRadius 100 100)
   return ()
 
--- drawPlanet :: Planet -> IO ()
--- drawPlanet = 
+drawPlanet :: Orbit -> IO ()
+drawPlanet orbit = preservingMatrix $ do
+  color (Color3 0 0 1 :: Color3 GLfloat)
+  let e = elements orbit
+      c = calcHelioCoords
+            (semiMajorAxis e)
+            (ecc e)
+            (longAscNode e)
+            (argPeri e)
+            (incl e)
+            (curTrueAnomaly orbit)
+  translate (vector3d (realToFrac $ xCoord c)
+                      (realToFrac $ yCoord c)
+                      (realToFrac $ zCoord c))
+  materialEmission GL.Front $= (Color4 0 0 1 1 :: Color4 GLfloat)
+  renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere 0.001 100 100)
+  if (distPeri e > 4.0)
+    then renderString (name e) 0.1
+    else renderString (name e ) 0.01
+    
+    
 
 drawSunAxis :: IO ()
 drawSunAxis = renderPrimitive Lines $ do
@@ -156,7 +180,21 @@ drawOrbit orbit = renderPrimitive LineStrip $ do
                                 (realToFrac $ zCoord pt))) m
   return ()
     
-  
+drawPlanetRadius :: Orbit -> IO ()
+drawPlanetRadius orbit = renderPrimitive Lines $ do
+  color (Color3 0 1 0 :: Color3 GLfloat)
+  let e = elements orbit
+      c = calcHelioCoords
+            (semiMajorAxis e)
+            (ecc e)
+            (longAscNode e)
+            (argPeri e)
+            (incl e)
+            (curTrueAnomaly orbit)
+  vertex (vertex3d 0 0 0)
+  vertex (vertex3d (realToFrac $ xCoord c)
+                   (realToFrac $ yCoord c)
+                   (realToFrac $ zCoord c))
 
 updateCam :: IORef SystemState -> SpinButton -> SpinButton -> SpinButton -> IO ()
 updateCam sysState x y z = do
@@ -170,6 +208,11 @@ updateCam sysState x y z = do
         d = delayTime oldState
     writeIORef sysState $ SystemState c o s d
     return ()
+
+updateScaleFromSpinner :: IORef SystemState -> SpinButton -> IO ()
+updateScaleFromSpinner sysState s = do
+  vals <- liftM truncate $ spinButtonGetValue s
+  updateScale sysState vals
 
 buttonStartAct :: IO ()
 buttonStartAct = do
@@ -202,6 +245,19 @@ buttonResetAct sysState x y z = do
   updateCam sysState x y z
   return ()
 
+buttonScaleAct :: IORef SystemState -> SpinButton -> Int -> IO ()
+buttonScaleAct sysState s val = do
+  spinButtonSetValue s (fromIntegral val)
+  updateScale sysState val
+
+buttonScaleDayAct :: IORef SystemState -> SpinButton -> IO ()
+buttonScaleDayAct sysState s = do
+  buttonScaleAct sysState s 86400
+
+buttonScaleYearAct :: IORef SystemState -> SpinButton -> IO ()
+buttonScaleYearAct sysState s = do
+  buttonScaleAct sysState s (86400 * 365)
+
 -- OpenGL helpers
 vertex3f :: GLfloat -> GLfloat -> GLfloat -> Vertex3 GLfloat
 vertex3f = Vertex3
@@ -221,9 +277,10 @@ vector3f = Vector3
 vector3d :: GLdouble -> GLdouble -> GLdouble -> Vector3 GLdouble
 vector3d = Vector3
 
-renderString :: String -> IO ()
-renderString str = preservingMatrix $ do
-  scale 0.1 0.1 (0.1 :: GLfloat)
+renderString :: String -> Double -> IO ()
+renderString str scalefac = preservingMatrix $ do
+  let scalef = realToFrac scalefac
+  scale scalef scalef (scalef :: GLfloat)
   font <- FT.createTextureFont "../data/Inconsolata.otf"
   -- font <- FT.createBufferFont "../data/Inconsolata.otf"
   FT.setFontFaceSize font 18 120

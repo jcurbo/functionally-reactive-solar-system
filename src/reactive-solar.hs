@@ -107,13 +107,19 @@ main = do
 
        labelScale <- labelNewWithMnemonic "Time Compression"
        scaleVal <- getScale sysState
-       adjScale <- adjustmentNew (fromIntegral scaleVal) 1 20 1 2 0
+       adjScale <- adjustmentNew (fromIntegral scaleVal) 1 1000000 100 1000 0
        spinScale <- spinButtonNew adjScale 1 0
        boxPackStart hBoxTweak labelScale PackNatural 2
        boxPackStart hBoxTweak spinScale PackNatural 2
 
-       labelTimer <- labelNew Nothing
-       boxPackStart hBoxTweak labelTimer PackNatural 2
+       buttonScaleDay <- buttonNewWithLabel "1s = 1d"
+       boxPackStart hBoxTweak buttonScaleDay PackNatural 2
+
+       buttonScaleYear <- buttonNewWithLabel "1s = 1y"
+       boxPackStart hBoxTweak buttonScaleYear PackNatural 2
+
+       -- labelTimer <- labelNew Nothing
+       -- boxPackStart hBoxTweak labelTimer PackNatural 2
 
        buttonReset <- buttonNewWithLabel "Reset"
        boxPackStart hBoxTweak buttonReset PackNatural 2
@@ -143,6 +149,9 @@ main = do
          eQuit  <- event0 buttonQuit buttonActivated
          eReset <- event0 buttonReset buttonActivated
 
+         eScaleDay <- event0 buttonScaleDay buttonActivated
+         eScaleYear <- event0 buttonScaleYear buttonActivated
+
          ticks <- intervals delay
 
          -- let ticksWithIncrement = (True <$ eReset) `union` (False <$ ticks)
@@ -163,6 +172,9 @@ main = do
          reactimate $ buttonQuitAct window <$ eQuit
          reactimate $ buttonResetAct sysState spinCamX spinCamY spinCamZ <$ eReset
 
+         reactimate $ buttonScaleDayAct sysState spinScale <$ eScaleDay
+         reactimate $ buttonScaleYearAct sysState spinScale <$ eScaleYear
+
          -- reactimate $ updateState sysState <$ eStateChange
 
        actuate network
@@ -178,6 +190,8 @@ main = do
          updateCam sysState spinCamX spinCamY spinCamZ
        onValueSpinned spinCamZ $
          updateCam sysState spinCamX spinCamY spinCamZ
+       onValueSpinned spinScale $
+         updateScaleFromSpinner sysState spinScale
 
        onDestroy window mainQuit
        -- onDestroy window (stopTimer tick)
