@@ -42,3 +42,5 @@ sin_d deg = sin $ toRad deg
 
 cos_d :: Double -> Double
 cos_d deg = cos $ toRad deg
+
+

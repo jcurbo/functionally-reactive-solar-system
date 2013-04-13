@@ -21,7 +21,6 @@ import Graphics.Rendering.OpenGL as GL
 
 import Control.Monad
 import Data.IORef
-import Control.Applicative
 
 import ReactiveSolar.Data
 import ReactiveSolar.Orbit
@@ -168,7 +167,8 @@ updateCam sysState x y z = do
     let o = orbits oldState
         c = CameraState valx valy valz
         s = scalefac oldState
-    writeIORef sysState $ SystemState c o s
+        d = delayTime oldState
+    writeIORef sysState $ SystemState c o s d
     return ()
 
 buttonStartAct :: IO ()
