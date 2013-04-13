@@ -2,7 +2,6 @@ module Main (main) where
 
 import Graphics.UI.Gtk hiding (get)
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
-import Graphics.Rendering.OpenGL
 
 -- This lets us use := for Gtk attributes
 import Graphics.UI.Gtk (AttrOp((:=)))
@@ -12,14 +11,7 @@ import Reactive.Banana.Frameworks
 import Reactive.Banana.Gtk
 
 import ReactiveSolar.GUI
-import ReactiveSolar.Orbit
 import ReactiveSolar.Data
-
-import Data.IORef
-import Control.Concurrent
-import Control.Exception (finally)
-
-import Control.Monad.State as CMS
 
 main :: IO ()
 main = do
@@ -118,13 +110,8 @@ main = do
        buttonScaleYear <- buttonNewWithLabel "1s = 1y"
        boxPackStart hBoxTweak buttonScaleYear PackNatural 2
 
-       -- labelTimer <- labelNew Nothing
-       -- boxPackStart hBoxTweak labelTimer PackNatural 2
-
        buttonReset <- buttonNewWithLabel "Reset"
        boxPackStart hBoxTweak buttonReset PackNatural 2
-
-       -- add label here later for time?
        
        -- OpenGL widget
 
@@ -154,14 +141,7 @@ main = do
 
          ticks <- intervals delay
 
-         -- let ticksWithIncrement = (True <$ eReset) `union` (False <$ ticks)
-         --     nums = (liftA show . snd) $ runStateReactive incrementReset 0 ticksWithIncrement
-         -- sink labelTimer [labelLabel :== nums]
-
          reactimate $ updateState sysState <$ ticks
-
-         -- bStateChange <- fromPoll (readMVar tick)
-         -- eStateChange <- changes bStateChange
 
          reactimate $ canvasOnRealize canvas <$ eCanvasRealize
          reactimate $ buttonStartAct <$ eStart
@@ -174,8 +154,6 @@ main = do
 
          reactimate $ buttonScaleDayAct sysState spinScale <$ eScaleDay
          reactimate $ buttonScaleYearAct sysState spinScale <$ eScaleYear
-
-         -- reactimate $ updateState sysState <$ eStateChange
 
        actuate network
 
@@ -194,24 +172,6 @@ main = do
          updateScaleFromSpinner sysState spinScale
 
        onDestroy window mainQuit
-       -- onDestroy window (stopTimer tick)
        
        widgetShowAll window
        mainGUI
-
--- stopTimer :: MVar Int -> IO ()
--- stopTimer tick = do
---   takeMVar tick
---   putMVar tick (-1)
-
--- runStateReactive :: (Frameworks t)
---     => (a -> State s b) -- ^ Kleisli arrow in in State monad
---     -> s
---     -> Event t a
---     -> (Event t b, Behavior t s)
--- runStateReactive stateM s xs =
---     mapAccum s $ (runState . stateM) <$> xs
-
--- incrementReset :: Bool -> State Int ()
--- incrementReset False = CMS.get >>= (put . (+ 1))
--- incrementReset True = put 0
