@@ -7,7 +7,6 @@ module ReactiveSolar.Orbit
 
 import ReactiveSolar.Data
 
-
 -- orbital formulae checked against http://aa.quae.nl/en/reken/hemelpositie.html
 
 -- a = semimajor axis (AU)
