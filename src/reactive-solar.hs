@@ -24,10 +24,11 @@ main = do
        GtkGL.initGL
 
        -- state init
-       let cam = CameraState 0 0 (-150.0)
-       ssData <- initSolarSystem
-       let s = SystemState cam ssData
-       sysState <- newIORef s
+       -- let cam = CameraState 0 0 (-150.0)
+       -- ssData <- initSolarSystem
+       -- let s = SystemState cam ssData
+       -- sysState <- newIORef s
+       sysState <- initState
 
        -- GUI construction
         
@@ -67,20 +68,23 @@ main = do
        boxPackStart vBoxTop hBoxTweak PackNatural 0
 
        labelCamX <- labelNewWithMnemonic "Tilt"
-       adjCamX <- adjustmentNew (tilt cam) (-90.0) 0 1 5.0 0
+       tiltVal <- getTilt sysState
+       adjCamX <- adjustmentNew tiltVal (-90.0) 0 1 5.0 0
        spinCamX <- spinButtonNew adjCamX 1 0
        boxPackStart hBoxTweak labelCamX PackNatural 2
        boxPackStart hBoxTweak spinCamX PackNatural 2
 
        labelCamY <- labelNewWithMnemonic "Rotate"
-       adjCamY <- adjustmentNew (rot cam) (-180.0) 180.0 1 5.0 0
+       rotVal <- getRot sysState
+       adjCamY <- adjustmentNew rotVal (-180.0) 180.0 1 5.0 0
        spinCamY <- spinButtonNew adjCamY 1 0
        spinButtonSetWrap spinCamY True
        boxPackStart hBoxTweak labelCamY PackNatural 2
        boxPackStart hBoxTweak spinCamY PackNatural 2
 
        labelCamZ <- labelNewWithMnemonic "Zoom"
-       adjCamZ <- adjustmentNew (zoom cam) (-200.0) (-0.05) 0.5 5.0 0
+       zoomVal <- getZoom sysState
+       adjCamZ <- adjustmentNew zoomVal (-200.0) (-0.05) 0.5 5.0 0
        spinCamZ <- spinButtonNew adjCamZ 0.5 1
        boxPackStart hBoxTweak labelCamZ PackNatural 2
        boxPackStart hBoxTweak spinCamZ PackNatural 2
