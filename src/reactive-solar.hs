@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Graphics.UI.Gtk
+import Graphics.UI.Gtk hiding (get)
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
 import Graphics.Rendering.OpenGL
 
@@ -16,6 +16,10 @@ import ReactiveSolar.Orbit
 import ReactiveSolar.Data
 
 import Data.IORef
+import Control.Concurrent
+import Control.Exception (finally)
+
+import Control.Monad.State as CMS
 
 main :: IO ()
 main = do
@@ -28,6 +32,19 @@ main = do
        -- let s = SystemState cam ssData
        -- sysState <- newIORef s
        sysState <- initState
+
+       -- fork off state update thread
+       -- forkIO $ updateState sysState 100
+       -- let updateTime = 500
+       -- timeoutAddFull (do
+       --                    updateState sysState updateTime
+       --                    return True)
+       --   priorityDefaultIdle updateTime
+
+       -- tick <- newMVar 0
+       -- finale <- newEmptyMVar
+       -- delay <- getDelay sysState
+       -- forkIO (timeloop tick delay `finally` putMVar finale ()) -- ?
 
        -- GUI construction
         
@@ -95,6 +112,9 @@ main = do
        boxPackStart hBoxTweak labelScale PackNatural 2
        boxPackStart hBoxTweak spinScale PackNatural 2
 
+       labelTimer <- labelNew Nothing
+       boxPackStart hBoxTweak labelTimer PackNatural 2
+
        buttonReset <- buttonNewWithLabel "Reset"
        boxPackStart hBoxTweak buttonReset PackNatural 2
 
@@ -109,6 +129,8 @@ main = do
 
        statusBar <- statusbarNew
        boxPackStart vBoxTop statusBar PackNatural 0
+
+       delay <- getDelay sysState
    
        -- event network (events and handlers)
        network <- compile $ do
@@ -121,6 +143,17 @@ main = do
          eQuit  <- event0 buttonQuit buttonActivated
          eReset <- event0 buttonReset buttonActivated
 
+         ticks <- intervals delay
+
+         -- let ticksWithIncrement = (True <$ eReset) `union` (False <$ ticks)
+         --     nums = (liftA show . snd) $ runStateReactive incrementReset 0 ticksWithIncrement
+         -- sink labelTimer [labelLabel :== nums]
+
+         reactimate $ updateState sysState <$ ticks
+
+         -- bStateChange <- fromPoll (readMVar tick)
+         -- eStateChange <- changes bStateChange
+
          reactimate $ canvasOnRealize canvas <$ eCanvasRealize
          reactimate $ buttonStartAct <$ eStart
          reactimate $ buttonStopAct <$ eStop
@@ -129,6 +162,8 @@ main = do
          reactimate $ buttonRemAct <$ eRem
          reactimate $ buttonQuitAct window <$ eQuit
          reactimate $ buttonResetAct sysState spinCamX spinCamY spinCamZ <$ eReset
+
+         -- reactimate $ updateState sysState <$ eStateChange
 
        actuate network
 
@@ -145,11 +180,24 @@ main = do
          updateCam sysState spinCamX spinCamY spinCamZ
 
        onDestroy window mainQuit
+       -- onDestroy window (stopTimer tick)
        
        widgetShowAll window
        mainGUI
 
+-- stopTimer :: MVar Int -> IO ()
+-- stopTimer tick = do
+--   takeMVar tick
+--   putMVar tick (-1)
 
+-- runStateReactive :: (Frameworks t)
+--     => (a -> State s b) -- ^ Kleisli arrow in in State monad
+--     -> s
+--     -> Event t a
+--     -> (Event t b, Behavior t s)
+-- runStateReactive stateM s xs =
+--     mapAccum s $ (runState . stateM) <$> xs
 
-
-
+-- incrementReset :: Bool -> State Int ()
+-- incrementReset False = CMS.get >>= (put . (+ 1))
+-- incrementReset True = put 0
