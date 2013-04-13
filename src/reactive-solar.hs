@@ -18,25 +18,7 @@ main = do
        initGUI
        GtkGL.initGL
 
-       -- state init
-       -- let cam = CameraState 0 0 (-150.0)
-       -- ssData <- initSolarSystem
-       -- let s = SystemState cam ssData
-       -- sysState <- newIORef s
        sysState <- initState
-
-       -- fork off state update thread
-       -- forkIO $ updateState sysState 100
-       -- let updateTime = 500
-       -- timeoutAddFull (do
-       --                    updateState sysState updateTime
-       --                    return True)
-       --   priorityDefaultIdle updateTime
-
-       -- tick <- newMVar 0
-       -- finale <- newEmptyMVar
-       -- delay <- getDelay sysState
-       -- forkIO (timeloop tick delay `finally` putMVar finale ()) -- ?
 
        -- GUI construction
         
