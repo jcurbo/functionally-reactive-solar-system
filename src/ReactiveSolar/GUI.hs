@@ -81,17 +81,6 @@ canvasOnRealize canvas =
     blend $= Enabled
     blendFunc $= (SrcAlpha, OneMinusSrcAlpha)
     lineWidth $= 0.25
-
-
-
--- canvasOnExpose :: GtkGL.GLDrawingArea -> IO Bool
--- canvasOnExpose canvas =
---   GtkGL.withGLDrawingArea canvas $ \glwindow -> do
---     clear [DepthBuffer, ColorBuffer]
---     display
---     GtkGL.glDrawableSwapBuffers glwindow
---     return True
-    
    
 display :: IORef SystemState -> IO ()
 display sysState = do
@@ -105,11 +94,8 @@ display sysState = do
       objs = orbits c
   translate (vector3d 0 0 cZ)
   preservingMatrix $ do
-    -- renderString "hello solar system!"
-    -- the three changes we want to track with IORefs
-    rotate cT (vector3d 1 0 0) -- rotate around x axis (tilt)
-    rotate cR (vector3d 0 0 1) -- rotate around y axis (rotate)
-    -- translate (vector3d 0 0 cZ) -- translate along z axis (zoom)
+    rotate cT (vector3d 1 0 0)
+    rotate cR (vector3d 0 0 1)
     drawSunAxis
     drawSun
     mapM_ drawOrbit objs
@@ -118,8 +104,6 @@ display sysState = do
     
     return ()
   
-
--- generalize later
 drawSun :: IO ()
 drawSun = preservingMatrix $ do
   let sunRadius = 0.0046491
@@ -147,8 +131,6 @@ drawPlanet orbit = preservingMatrix $ do
   if (distPeri e > 4.0)
     then renderString (name e) 0.1
     else renderString (name e ) 0.01
-    
-    
 
 drawSunAxis :: IO ()
 drawSunAxis = renderPrimitive Lines $ do
@@ -161,9 +143,6 @@ drawSunAxis = renderPrimitive Lines $ do
     color (Color3 0 1 0 :: Color3 GLfloat)
     vertex (vertex3d 0 0 100)
     vertex (vertex3d 0 0 (-100))
-
--- drawAxis :: Planet -> IO ()
--- drawAxis
 
 drawOrbit :: Orbit -> IO ()
 drawOrbit orbit = renderPrimitive LineStrip $ do
@@ -282,6 +261,5 @@ renderString str scalefac = preservingMatrix $ do
   let scalef = realToFrac scalefac
   scale scalef scalef (scalef :: GLfloat)
   font <- FT.createTextureFont "../data/Inconsolata.otf"
-  -- font <- FT.createBufferFont "../data/Inconsolata.otf"
   FT.setFontFaceSize font 18 120
   FT.renderFont font str FT.Front
