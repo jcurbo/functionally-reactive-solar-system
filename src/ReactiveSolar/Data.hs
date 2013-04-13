@@ -138,7 +138,7 @@ updateTrueAnomaly sysState delay = let
   fac = (24 * 60 * 60 * 1000) `div` delay
   n = map (\x -> Orbit
                  (elements x)
-                 ((curTrueAnomaly x) + ((meanMotion $ elements x) / fromIntegral fac))
+                 (curTrueAnomaly x + (meanMotion (elements x) / fromIntegral fac))
           ) $ orbits sysState
   in SystemState (camState sysState) n
 
@@ -148,8 +148,7 @@ initState = do
   ssData <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
   let cam = CameraState 0 0 (-150.0)
       s = SystemState cam ssData
-  sysState <- newIORef s
-  return sysState
+  newIORef s
 
 getTilt :: IORef SystemState -> IO Double
 getTilt sysState = do
@@ -169,5 +168,10 @@ getZoom sysState = do
   let t = zoom $ camState s
   return t
 
-
+-- update the system state every 'delay' milliseconds
+updateState :: IORef SystemState -> Int -> IO ()
+updateState sysState delay = do
+  modifyIORef sysState (`updateTrueAnomaly` delay)
+  return ()
+  
   

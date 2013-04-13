@@ -110,7 +110,7 @@ display sysState = do
     -- translate (vector3d 0 0 cZ) -- translate along z axis (zoom)
     drawSunAxis
     drawSun
-    mapM drawOrbit objs
+    mapM_ drawOrbit objs
     
     return ()
   
@@ -152,7 +152,7 @@ drawOrbit orbit = renderPrimitive LineStrip $ do
                (longAscNode e)
                (argPeri e)
                (incl e)) [0..360]
-  mapM (\pt -> vertex (vertex3d (realToFrac $ xCoord pt)
+  mapM_ (\pt -> vertex (vertex3d (realToFrac $ xCoord pt)
                                 (realToFrac $ yCoord pt)
                                 (realToFrac $ zCoord pt))) m
   return ()
