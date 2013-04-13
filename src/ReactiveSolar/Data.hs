@@ -32,7 +32,8 @@ import Data.IORef
 
 -- state information for the entire system
 data SystemState = SystemState { camState :: CameraState,
-                                 orbits   :: [Orbit]
+                                 orbits   :: [Orbit],
+                                 scale :: Int
                                } deriving (Show)
 
 data CameraState = CameraState { tilt :: Double,
@@ -132,13 +133,13 @@ readJsonFile = do
 
 -- delay is in milliseconds; e.g. a delay of (24 * 60 * 60 * 1000) would set fac to 1, and would
 -- advance the true anomaly by the value of meanMotion (which is in degrees/day)
-updateTrueAnomaly :: SystemState -> Int -> SystemState
+updateTrueAnomaly :: SystemState -> Int -> Int -> SystemState
 updateTrueAnomaly sysState delay = let
   -- number of milliseconds in a day divided by the delay tells us how much to scale meanMotion
   fac = (24 * 60 * 60 * 1000) `div` delay
   n = map (\x -> Orbit
                  (elements x)
-                 (curTrueAnomaly x + (meanMotion (elements x) / fromIntegral fac))
+                 (curTrueAnomaly x + (fromIntegral (scale sysState) * (meanMotion (elements x) / fromIntegral fac)))
           ) $ orbits sysState
   in SystemState (camState sysState) n
 
@@ -147,7 +148,8 @@ initState = do
   d <- readJsonFile
   ssData <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
   let cam = CameraState 0 0 (-150.0)
-      s = SystemState cam ssData
+      scale = 1
+      s = SystemState cam ssData scale
   newIORef s
 
 getTilt :: IORef SystemState -> IO Double
@@ -168,10 +170,16 @@ getZoom sysState = do
   let t = zoom $ camState s
   return t
 
+getScale :: IORef SystemState -> IO Int
+getScale sysState = do
+  s <- readIORef sysState
+  let t = scale s
+  return t
+
 -- update the system state every 'delay' milliseconds
-updateState :: IORef SystemState -> Int -> IO ()
-updateState sysState delay = do
-  modifyIORef sysState (`updateTrueAnomaly` delay)
+updateState :: IORef SystemState -> Int -> Int -> IO ()
+updateState sysState delay scale = do
+  modifyIORef sysState (\x -> updateTrueAnomaly x delay scale)
   return ()
   
   
