@@ -16,7 +16,8 @@ module ReactiveSolar.Data
         updateTrueAnomaly,
         getScale,
         updateState,
-        timeloop
+        -- timeloop,
+        getDelay,
         ) where
 
 import System.IO
@@ -33,7 +34,6 @@ import Data.Maybe
 import GHC.Generics (Generic)
 import Data.IORef
 import Control.Concurrent
-import Control.Concurrent.STM
 import Text.Printf
 
 -- state information for the entire system
@@ -160,7 +160,7 @@ initState = do
       -- scale at real-time
       scaleV = 1
       -- update delay at 100 ms
-      delayT = 100
+      delayT = 500
       s = SystemState cam ssData scaleV delayT
   newIORef s
 
@@ -188,40 +188,26 @@ getScale sysState = do
   let t = scalefac s
   return t
 
--- update the system state every 'delay' milliseconds
+getDelay :: IORef SystemState -> IO Int
+getDelay sysState = do
+  s <- readIORef sysState
+  let t = delayTime s
+  return t
+
 updateState :: IORef SystemState -> IO ()
 updateState sysState = do
   modifyIORef sysState updateTrueAnomaly
---  threadDelay (delay * 1000)
   r <- readIORef sysState
   let v = curTrueAnomaly $ last $ orbits r
   printf "%f\n" v
---  updateState sysState delay
 
 
--- updateStateM :: IORef SystemState -> Int -> MVar DoOrDie -> IO ()
--- updateStateM sysState delay v = run where
+-- timeloop :: MVar Int -> Int -> IO ()
+-- timeloop tick delay = run where
 --   run = do
---     putMVar v Do
---     modifyIORef sysState (\x -> updateTrueAnomaly x delay)
---     threadDelay (delay * 1000)
---     r <- readIORef sysState
---     let a = curTrueAnomaly $ last $ orbits r
---     printf "%f\n" a
-
---     m <- takeMVar v
---     case m of
---       Do -> updateStateM sysState delay v
---       Die -> return ()
-
-data DoOrDie = Do | Die
-
-timeloop :: TMVar DoOrDie -> TMVar DoOrDie -> Int -> IO ()
-timeloop tick die delay = run where
-  run = do
-    i <- forkIO (threadDelay (1000 * delay) >> atomically (putTMVar tick Do))
-    r <- atomically (takeTMVar tick `orElse` takeTMVar die)
-    case r of
-      Do -> run
-      Die -> killThread i
+--     r <- takeMVar tick
+--     if (r == (-1)) then
+--       putStrLn "Die" >> return ()
+--      else
+--       putStrLn "Do" >> threadDelay (1000 * delay) >> putMVar tick (r+1) >> putStrLn (show r) >> run
       
