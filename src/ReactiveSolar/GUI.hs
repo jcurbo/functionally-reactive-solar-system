@@ -166,8 +166,9 @@ updateCam sysState x y z = do
     valz <- liftM realToFrac $ spinButtonGetValue z
     oldState <- readIORef sysState
     let o = orbits oldState
-    let c = CameraState valx valy valz
-    writeIORef sysState $ SystemState c o
+        c = CameraState valx valy valz
+        s = scalefac oldState
+    writeIORef sysState $ SystemState c o s
     return ()
 
 buttonStartAct :: IO ()

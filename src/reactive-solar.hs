@@ -17,7 +17,6 @@ import ReactiveSolar.Data
 
 import Data.IORef
 
-
 main :: IO ()
 main = do
        initGUI
@@ -45,22 +44,22 @@ main = do
        boxPackStart vBoxTop hBoxTop PackNatural 0
 
        buttonStart <- buttonNewWithLabel "Start"
-       boxPackStart hBoxTop buttonStart PackNatural 0
+       boxPackStart hBoxTop buttonStart PackNatural 2
 
        buttonStop <- buttonNewWithLabel "Stop"
-       boxPackStart hBoxTop buttonStop PackNatural 0
+       boxPackStart hBoxTop buttonStop PackNatural 2
 
        buttonList <- buttonNewWithLabel "List Objs"
-       boxPackStart hBoxTop buttonList PackNatural 0
+       boxPackStart hBoxTop buttonList PackNatural 2
 
        buttonAdd <- buttonNewWithLabel "Add Obj"
-       boxPackStart hBoxTop buttonAdd PackNatural 0
+       boxPackStart hBoxTop buttonAdd PackNatural 2
 
        buttonRem <- buttonNewWithLabel "Rem Obj"
-       boxPackStart hBoxTop buttonRem PackNatural 0
+       boxPackStart hBoxTop buttonRem PackNatural 2
 
        buttonQuit <- buttonNewWithLabel "Quit"
-       boxPackEnd hBoxTop buttonQuit PackNatural 0
+       boxPackEnd hBoxTop buttonQuit PackNatural 2
 
        -- Second row, tweak controls
 
@@ -89,11 +88,18 @@ main = do
        boxPackStart hBoxTweak labelCamZ PackNatural 2
        boxPackStart hBoxTweak spinCamZ PackNatural 2
 
+       labelScale <- labelNewWithMnemonic "Time Compression"
+       scaleVal <- getScale sysState
+       adjScale <- adjustmentNew (fromIntegral scaleVal) 1 20 1 2 0
+       spinScale <- spinButtonNew adjScale 1 0
+       boxPackStart hBoxTweak labelScale PackNatural 2
+       boxPackStart hBoxTweak spinScale PackNatural 2
+
        buttonReset <- buttonNewWithLabel "Reset"
        boxPackStart hBoxTweak buttonReset PackNatural 2
 
        -- add label here later for time?
-
+       
        -- OpenGL widget
 
        canvas <- createCanvas sysState

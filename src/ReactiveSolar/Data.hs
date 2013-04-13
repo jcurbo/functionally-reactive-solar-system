@@ -13,7 +13,8 @@ module ReactiveSolar.Data
         getTilt,
         getRot,
         getZoom,
-        updateTrueAnomaly
+        updateTrueAnomaly,
+        getScale
         ) where
 
 import System.IO
@@ -33,7 +34,7 @@ import Data.IORef
 -- state information for the entire system
 data SystemState = SystemState { camState :: CameraState,
                                  orbits   :: [Orbit],
-                                 scale :: Int
+                                 scalefac :: Int
                                } deriving (Show)
 
 data CameraState = CameraState { tilt :: Double,
@@ -139,7 +140,7 @@ updateTrueAnomaly sysState delay = let
   fac = (24 * 60 * 60 * 1000) `div` delay
   n = map (\x -> Orbit
                  (elements x)
-                 (curTrueAnomaly x + (fromIntegral (scale sysState) * (meanMotion (elements x) / fromIntegral fac)))
+                 (curTrueAnomaly x + (fromIntegral (scalefac sysState) * (meanMotion (elements x) / fromIntegral fac)))
           ) $ orbits sysState
   in SystemState (camState sysState) n
 
@@ -148,8 +149,8 @@ initState = do
   d <- readJsonFile
   ssData <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
   let cam = CameraState 0 0 (-150.0)
-      scale = 1
-      s = SystemState cam ssData scale
+      scaleV = 1
+      s = SystemState cam ssData scaleV
   newIORef s
 
 getTilt :: IORef SystemState -> IO Double
@@ -173,13 +174,13 @@ getZoom sysState = do
 getScale :: IORef SystemState -> IO Int
 getScale sysState = do
   s <- readIORef sysState
-  let t = scale s
+  let t = scalefac s
   return t
 
 -- update the system state every 'delay' milliseconds
 updateState :: IORef SystemState -> Int -> Int -> IO ()
-updateState sysState delay scale = do
-  modifyIORef sysState (\x -> updateTrueAnomaly x delay scale)
+updateState sysState delay scaleV = do
+  modifyIORef sysState (\x -> updateTrueAnomaly x delay scaleV)
   return ()
   
   
