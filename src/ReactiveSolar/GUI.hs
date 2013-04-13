@@ -257,9 +257,9 @@ vector3d :: GLdouble -> GLdouble -> GLdouble -> Vector3 GLdouble
 vector3d = Vector3
 
 renderString :: String -> Double -> IO ()
-renderString str scalefac = preservingMatrix $ do
-  let scalef = realToFrac scalefac
-  scale scalef scalef (scalef :: GLfloat)
+renderString str scalef = preservingMatrix $ do
+  let scalef' = realToFrac scalef
+  scale scalef' scalef' (scalef' :: GLfloat)
   font <- FT.createTextureFont "../data/Inconsolata.otf"
   FT.setFontFaceSize font 18 120
   FT.renderFont font str FT.Front
