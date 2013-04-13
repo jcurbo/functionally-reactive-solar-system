@@ -11,14 +11,17 @@ module ReactiveSolar.GUI
         buttonResetAct
         ) where
 
-import Graphics.UI.Gtk
+import Graphics.UI.Gtk as Gtk
 import Graphics.UI.Gtk (AttrOp((:=)))
 import qualified Graphics.UI.Gtk.OpenGL as GtkGL
 
-import Graphics.Rendering.OpenGL
+import Graphics.Rendering.FTGL as FT
+
+import Graphics.Rendering.OpenGL as GL
 
 import Control.Monad
 import Data.IORef
+import Control.Applicative
 
 import ReactiveSolar.Data
 import ReactiveSolar.Orbit
@@ -100,6 +103,7 @@ display sysState = do
       objs = orbits c
   translate (vector3d 0 0 cZ)
   preservingMatrix $ do
+    -- renderString "hello solar system!"
     -- the three changes we want to track with IORefs
     rotate cT (vector3d 1 0 0) -- rotate around x axis (tilt)
     rotate cR (vector3d 0 0 1) -- rotate around y axis (rotate)
@@ -107,6 +111,7 @@ display sysState = do
     drawSunAxis
     drawSun
     mapM drawOrbit objs
+    
     return ()
   
 
@@ -115,7 +120,7 @@ drawSun :: IO ()
 drawSun = preservingMatrix $ do
   let sunRadius = 0.0046491
   color (Color3 1 1 0 :: Color3 GLfloat)
-  materialEmission Front $= (Color4 1 1 0 1 :: Color4 GLfloat)
+  materialEmission GL.Front $= (Color4 1 1 0 1 :: Color4 GLfloat)
   renderQuadric (QuadricStyle Nothing NoTextureCoordinates Outside FillStyle) (Sphere sunRadius 100 100)
   return ()
 
@@ -215,4 +220,10 @@ vector3f = Vector3
 vector3d :: GLdouble -> GLdouble -> GLdouble -> Vector3 GLdouble
 vector3d = Vector3
 
-
+renderString :: String -> IO ()
+renderString str = preservingMatrix $ do
+  scale 0.1 0.1 (0.1 :: GLfloat)
+  font <- FT.createTextureFont "../data/Inconsolata.otf"
+  -- font <- FT.createBufferFont "../data/Inconsolata.otf"
+  FT.setFontFaceSize font 18 120
+  FT.renderFont font str FT.Front
