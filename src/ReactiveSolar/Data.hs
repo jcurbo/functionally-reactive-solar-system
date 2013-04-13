@@ -2,13 +2,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module ReactiveSolar.Data
        (readJsonFile,
-        initSolarSystem,
+        --initSolarSystem,
         writeJsonFileFromNASAFiles,
         OrbitElements(..),
         Orbit(..),
         OrbitHelioCoords(..),
         SystemState(..),
-        CameraState(..)
+        CameraState(..),
+        initState,
+        getTilt,
+        getRot,
+        getZoom,
+        updateTrueAnomaly
         ) where
 
 import System.IO
@@ -23,6 +28,7 @@ import System.Directory
 import qualified Data.ByteString.Lazy as L
 import Data.Maybe
 import GHC.Generics (Generic)
+import Data.IORef
 
 -- state information for the entire system
 data SystemState = SystemState { camState :: CameraState,
@@ -69,27 +75,6 @@ dataDir = "../data/"
 dataFile :: String
 dataFile = "data.json"
 
--- won't need this if the generic stuff works, but keep it around for now
---
--- instance FromJSON OrbitElements where
---   parseJSON (Object v) =
---     OrbitElements <$>
---     (v .: T.pack "name")     <*>
---     (v .: T.pack "id")       <*>
---     (v .: T.pack "epoch")    <*>
---     (v .: T.pack "ecc")      <*>
---     (v .: T.pack "distPeri") <*>
---     (v .: T.pack "incl")     <*>
---     (v .: T.pack "longAscNode") <*>
---     (v .: T.pack "argPeri")  <*>
---     (v .: T.pack "timePeri") <*>
---     (v .: T.pack "meanMotion") <*>
---     (v .: T.pack "meanAnomaly") <*>
---     (v .: T.pack "trueAnomaly") <*>
---     (v .: T.pack "semiMajorAxis") <*>
---     (v .: T.pack "distApo")   <*>
---     (v .: T.pack "period")
-
 instance FromJSON OrbitElements
 
 instance ToJSON OrbitElements
@@ -134,10 +119,55 @@ readJsonFile = do
       j = fromJust o
   return j
   
-initSolarSystem :: IO [Orbit]
-initSolarSystem = do
-  d <- readJsonFile
-  mapM (\x -> return (Orbit x (trueAnomaly x))) d
+-- initSolarSystem :: IO [Orbit]
+-- initSolarSystem = do
+--   d <- readJsonFile
+--   mapM (\x -> return (Orbit x (trueAnomaly x))) d
   
+-- updateTrueAnomalyDaily :: SystemState -> SystemState
+-- updateTrueAnomalyDaily sysState = let
+--   n = map (\x -> Orbit (elements x) ((curTrueAnomaly x) + (meanMotion $ elements x))) $ orbits sysState
+--   in SystemState (camState sysState) n
 
-       
+
+-- delay is in milliseconds; e.g. a delay of (24 * 60 * 60 * 1000) would set fac to 1, and would
+-- advance the true anomaly by the value of meanMotion (which is in degrees/day)
+updateTrueAnomaly :: SystemState -> Int -> SystemState
+updateTrueAnomaly sysState delay = let
+  -- number of milliseconds in a day divided by the delay tells us how much to scale meanMotion
+  fac = (24 * 60 * 60 * 1000) `div` delay
+  n = map (\x -> Orbit
+                 (elements x)
+                 ((curTrueAnomaly x) + ((meanMotion $ elements x) / fromIntegral fac))
+          ) $ orbits sysState
+  in SystemState (camState sysState) n
+
+initState :: IO (IORef SystemState)
+initState = do
+  d <- readJsonFile
+  ssData <- mapM (\x -> return (Orbit x (trueAnomaly x))) d
+  let cam = CameraState 0 0 (-150.0)
+      s = SystemState cam ssData
+  sysState <- newIORef s
+  return sysState
+
+getTilt :: IORef SystemState -> IO Double
+getTilt sysState = do
+  s <- readIORef sysState
+  let t = tilt $ camState s
+  return t
+
+getRot :: IORef SystemState -> IO Double
+getRot sysState = do
+  s <- readIORef sysState
+  let t = rot $ camState s
+  return t
+
+getZoom :: IORef SystemState -> IO Double
+getZoom sysState = do
+  s <- readIORef sysState
+  let t = zoom $ camState s
+  return t
+
+
+  
