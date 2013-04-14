@@ -258,8 +258,10 @@ vector3d = Vector3
 
 renderString :: String -> Double -> IO ()
 renderString str scalef = preservingMatrix $ do
+  color (Color3 1 1 0 :: Color3 GLfloat)
   let scalef' = realToFrac scalef
   scale scalef' scalef' (scalef' :: GLfloat)
   font <- FT.createTextureFont "../data/Inconsolata.otf"
   FT.setFontFaceSize font 18 120
   FT.renderFont font str FT.Front
+  
