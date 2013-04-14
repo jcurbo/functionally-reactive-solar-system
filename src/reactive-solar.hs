@@ -23,7 +23,7 @@ main = do
        -- GUI construction
         
        window <- windowNew
-       set window [containerBorderWidth := 8,
+       set window [containerBorderWidth := 2,
                    windowTitle := "Functionally Reactive Solar System" ]
 
        vBoxTop <- vBoxNew False 0
