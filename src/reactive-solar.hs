@@ -74,14 +74,14 @@ main = do
 
        labelCamZ <- labelNewWithMnemonic "Zoom"
        zoomVal <- getZoom sysState
-       adjCamZ <- adjustmentNew zoomVal (-200.0) (-0.05) 0.5 5.0 0
+       adjCamZ <- adjustmentNew zoomVal (-10000.0) (-0.05) 0.5 50.0 0
        spinCamZ <- spinButtonNew adjCamZ 0.5 1
        boxPackStart hBoxTweak labelCamZ PackNatural 2
        boxPackStart hBoxTweak spinCamZ PackNatural 2
 
        labelScale <- labelNewWithMnemonic "Time Compression"
        scaleVal <- getScale sysState
-       adjScale <- adjustmentNew (fromIntegral scaleVal) 1 1000000 100 1000 0
+       adjScale <- adjustmentNew (fromIntegral scaleVal) 1 10000000 100 1000 0
        spinScale <- spinButtonNew adjScale 1 0
        boxPackStart hBoxTweak labelScale PackNatural 2
        boxPackStart hBoxTweak spinScale PackNatural 2

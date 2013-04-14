@@ -149,7 +149,7 @@ initState = do
   let cam = CameraState 0 0 (-150.0)
       -- scale at real-time
       scaleV = 1
-      -- update delay at 100 ms
+      -- update delay at 500 ms
       delayT = 500
       s = SystemState cam ssData scaleV delayT
   newIORef s
