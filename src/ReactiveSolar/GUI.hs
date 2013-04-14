@@ -2,12 +2,12 @@ module ReactiveSolar.GUI
        (createCanvas,
         canvasOnRealize,
         updateCam,
-        buttonStartAct,
-        buttonStopAct,
-        buttonRemAct,
+        --buttonStartAct,
+        --buttonStopAct,
+        --buttonRemAct,
         buttonQuitAct,
-        buttonListAct,
-        buttonAddAct,
+        --buttonListAct,
+        --buttonAddAct,
         buttonResetAct,
         updateScaleFromSpinner,
         buttonScaleDayAct,
@@ -96,7 +96,7 @@ display sysState = do
   preservingMatrix $ do
     rotate cT (vector3d 1 0 0)
     rotate cR (vector3d 0 0 1)
-    drawSunAxis
+    --drawSunAxis
     drawSun
     mapM_ drawOrbit objs
     mapM_ drawPlanetRadius objs
@@ -193,22 +193,22 @@ updateScaleFromSpinner sysState s = do
   vals <- liftM truncate $ spinButtonGetValue s
   updateScale sysState vals
 
-buttonStartAct :: IO ()
-buttonStartAct = do
-  putStrLn "start"
-  return ()
+-- buttonStartAct :: IO ()
+-- buttonStartAct = do
+--   putStrLn "start"
+--   return ()
 
-buttonStopAct :: IO ()
-buttonStopAct = return ()
+-- buttonStopAct :: IO ()
+-- buttonStopAct = return ()
 
-buttonListAct :: IO ()
-buttonListAct = return ()
+-- buttonListAct :: IO ()
+-- buttonListAct = return ()
 
-buttonAddAct :: IO ()
-buttonAddAct = return ()
+-- buttonAddAct :: IO ()
+-- buttonAddAct = return ()
 
-buttonRemAct :: IO ()
-buttonRemAct = return ()
+-- buttonRemAct :: IO ()
+-- buttonRemAct = return ()
 
 buttonQuitAct :: Window -> IO ()
 buttonQuitAct window = do

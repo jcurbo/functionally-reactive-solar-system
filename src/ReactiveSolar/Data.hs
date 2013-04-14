@@ -187,11 +187,11 @@ getDelay sysState = do
 updateState :: IORef SystemState -> IO ()
 updateState sysState = do
   modifyIORef sysState updateTrueAnomaly
-  r <- readIORef sysState
-  let v = curTrueAnomaly $ last $ orbits r
-      s = scalefac r
-  printf "current true anomaly: %f\n" v
-  printf "current scale factor: %d\n" s
+  -- r <- readIORef sysState
+  -- let v = curTrueAnomaly $ last $ orbits r
+  --     s = scalefac r
+  -- printf "current true anomaly: %f\n" v
+  -- printf "current scale factor: %d\n" s
 
 updateScale :: IORef SystemState -> Int -> IO ()
 updateScale sysState val = do

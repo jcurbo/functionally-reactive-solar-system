@@ -31,31 +31,31 @@ main = do
 
        -- First row, buttons
 
-       hBoxTop <- hBoxNew False 0
-       boxPackStart vBoxTop hBoxTop PackNatural 0
+       -- hBoxTop <- hBoxNew False 0
+       -- boxPackStart vBoxTop hBoxTop PackNatural 0
 
-       buttonStart <- buttonNewWithLabel "Start"
-       boxPackStart hBoxTop buttonStart PackNatural 2
+       -- buttonStart <- buttonNewWithLabel "Start"
+       -- boxPackStart hBoxTop buttonStart PackNatural 2
 
-       buttonStop <- buttonNewWithLabel "Stop"
-       boxPackStart hBoxTop buttonStop PackNatural 2
+       -- buttonStop <- buttonNewWithLabel "Stop"
+       -- boxPackStart hBoxTop buttonStop PackNatural 2
 
-       buttonList <- buttonNewWithLabel "List Objs"
-       boxPackStart hBoxTop buttonList PackNatural 2
+       -- buttonList <- buttonNewWithLabel "List Objs"
+       -- boxPackStart hBoxTop buttonList PackNatural 2
 
-       buttonAdd <- buttonNewWithLabel "Add Obj"
-       boxPackStart hBoxTop buttonAdd PackNatural 2
+       -- buttonAdd <- buttonNewWithLabel "Add Obj"
+       -- boxPackStart hBoxTop buttonAdd PackNatural 2
 
-       buttonRem <- buttonNewWithLabel "Rem Obj"
-       boxPackStart hBoxTop buttonRem PackNatural 2
-
-       buttonQuit <- buttonNewWithLabel "Quit"
-       boxPackEnd hBoxTop buttonQuit PackNatural 2
+       -- buttonRem <- buttonNewWithLabel "Rem Obj"
+       -- boxPackStart hBoxTop buttonRem PackNatural 2
 
        -- Second row, tweak controls
 
        hBoxTweak <- hBoxNew False 0
        boxPackStart vBoxTop hBoxTweak PackNatural 0
+
+       buttonQuit <- buttonNewWithLabel "Quit"
+       boxPackEnd hBoxTweak buttonQuit PackNatural 2
 
        labelCamX <- labelNewWithMnemonic "Tilt"
        tiltVal <- getTilt sysState
@@ -110,11 +110,11 @@ main = do
        -- event network (events and handlers)
        network <- compile $ do
          eCanvasRealize <- event0 canvas realize
-         eStart <- event0 buttonStart buttonActivated
-         eStop  <- event0 buttonStop buttonActivated
-         eList  <- event0 buttonList buttonActivated
-         eAdd   <- event0 buttonAdd buttonActivated
-         eRem   <- event0 buttonRem buttonActivated
+         -- eStart <- event0 buttonStart buttonActivated
+         -- eStop  <- event0 buttonStop buttonActivated
+         -- eList  <- event0 buttonList buttonActivated
+         -- eAdd   <- event0 buttonAdd buttonActivated
+         -- eRem   <- event0 buttonRem buttonActivated
          eQuit  <- event0 buttonQuit buttonActivated
          eReset <- event0 buttonReset buttonActivated
 
@@ -126,11 +126,11 @@ main = do
          reactimate $ updateState sysState <$ ticks
 
          reactimate $ canvasOnRealize canvas <$ eCanvasRealize
-         reactimate $ buttonStartAct <$ eStart
-         reactimate $ buttonStopAct <$ eStop
-         reactimate $ buttonListAct <$ eList
-         reactimate $ buttonAddAct <$ eAdd
-         reactimate $ buttonRemAct <$ eRem
+         -- reactimate $ buttonStartAct <$ eStart
+         -- reactimate $ buttonStopAct <$ eStop
+         -- reactimate $ buttonListAct <$ eList
+         -- reactimate $ buttonAddAct <$ eAdd
+         -- reactimate $ buttonRemAct <$ eRem
          reactimate $ buttonQuitAct window <$ eQuit
          reactimate $ buttonResetAct sysState spinCamX spinCamY spinCamZ <$ eReset
 
