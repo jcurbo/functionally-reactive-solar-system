@@ -41,7 +41,7 @@ are:
 
 ### Prerequisites for Haskell
 
-This program uses some Haskell libraries that is not in Hackage:
+This program uses some Haskell libraries that are not in Hackage:
 
 * [reactive-banana-gtk](https://github.com/conklech/reactive-banana-gtk)
 * [a fork of FTGL](https://github.com/Peaker/FTGL)
