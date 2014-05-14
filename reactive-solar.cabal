@@ -21,7 +21,7 @@ executable reactive-solar
   -- other-modules:       
   build-depends:        base, gtk >= 0.12.4, 
                         gtkglext, OpenGL, reactive-banana, ghc-prim,
-                        reactive-banana-gtk
+                        reactive-banana-gtk, bytestring, FTGL, aeson-pretty, directory, aeson, regex-pcre, filepath, split
   build-tools:          alex, happy
 --  other-modules:	Paths_reactive-solar
 
